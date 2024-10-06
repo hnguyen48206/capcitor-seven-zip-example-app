@@ -34,64 +34,67 @@ export class HomePage {
 
     // ------------------------------------ Event Listener ---------------------------------------
 
-    // try {
-    //   eventListener = await (Sevenzip as any).addListener(
-    //     'progressEvent',
-    //     (eventData: any) => {
-    //       // console.log(eventData.fileName + ' / ' + eventData.progress);
-
-    //       this._ngZone.run(() => {
-    //         this.currentProgress = Math.floor(eventData.progress.toFixed(2) * 100)
-    //         console.log(this.currentProgress)
-    //     });
-
-    //     }
-    //   );
-
-    //   let res = await Sevenzip.unzip({
-    //     fileURL: this.currentSrc || '',
-    //   });
-
-    //   console.log('Unzip Result: ', res)
-    //   eventListener.remove();
-
-    // } catch (error) {
-    //   console.log(error);
-    //   eventListener.remove();
-    // }
-
-    // ------------------------------------ Callback ---------------------------------------
-
     try {
-      let cID = await Sevenzip.unzip(
-        {
-          fileURL: this.currentSrc || '',
-          outputDir: '/abc'
-        },
-        (data: any) => {
-          //data là object { progress: number, fileName: string} progress là số double tiến độ, fileName là tên của file trong archive đang được giải nén
-          // console.log('callback data', data);
-          if (data?.progress) {
-            this._ngZone.run(() => {
-              this.currentProgress = Math.floor(data.progress.toFixed(2) * 100);
-              //Kiểm tra nếu progress là 100 thì chủ động cancel callback
-              if (this.currentProgress == 100)
-                Sevenzip.clearProgressWatch({
-                  id: this.callbackID,
-                });
-            });
-          }
+      eventListener = await (Sevenzip as any).addListener(
+        'progressEvent',
+        (eventData: any) => {
+          console.log(eventData.fileName + ' / ' + eventData.progress);
+
+        //   this._ngZone.run(() => {
+        //     this.currentProgress = Math.floor(eventData.progress.toFixed(2) * 100)
+        //     console.log(this.currentProgress)
+        // });
+
         }
       );
 
-      //Lưu lại callbackID để cancel
-      this.callbackID = cID;
-      console.log('callbackID', this.callbackID);
+      let res = await Sevenzip.unzip({
+        fileURL: this.currentSrc || '',
+      },()=>{
+
+      });
+
+      console.log('Unzip Result: ', res)
+      eventListener.remove();
+
     } catch (error) {
       console.log(error);
+      eventListener.remove();
     }
+
+    // ------------------------------------ Callback ---------------------------------------
+
+    // try {
+    //   let cID = await Sevenzip.unzip(
+    //     {
+    //       fileURL: this.currentSrc || '',
+    //       outputDir: '/abc'
+    //     },
+    //     (data: any) => {
+    //       //data là object { progress: number, fileName: string} progress là số double tiến độ, fileName là tên của file trong archive đang được giải nén
+    //       // console.log('callback data', data);
+    //       if (data?.progress) {
+    //         this._ngZone.run(() => {
+    //           this.currentProgress = Math.floor(data.progress.toFixed(2) * 100);
+    //           //Kiểm tra nếu progress là 100 thì chủ động cancel callback
+    //           if (this.currentProgress == 100)
+    //             Sevenzip.clearProgressWatch({
+    //               id: this.callbackID,
+    //             });
+    //         });
+    //       }
+    //     }
+    //   );
+
+    //   //Lưu lại callbackID để cancel
+    //   this.callbackID = cID;
+    //   console.log('callbackID', this.callbackID);
+    // } catch (error) {
+    //   console.log(error);
+    // }
   }
   async testFileSystem() {
+    await Filesystem.requestPermissions()
     const listFiles = async (path: string) => {
       try {
         const result = await Filesystem.readdir({
