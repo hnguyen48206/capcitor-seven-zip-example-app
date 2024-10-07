@@ -17,7 +17,7 @@ def capacitor_pods
   pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
   pod 'CapawesomeCapacitorFilePicker', :path => '../../node_modules/@capawesome/capacitor-file-picker'
-  pod 'Sevenzip', :path => '../../../sevenzip'
+  pod 'Sevenzip', :path => '../../node_modules/sevenzip'
 end
 
 target 'App' do

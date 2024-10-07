@@ -31,9 +31,11 @@
     "@capacitor/status-bar": "6.0.1",
     "@capawesome/capacitor-file-picker": "^6.0.1",
     "@ionic/angular": "^8.0.0",
+    "array-flat-polyfill": "^1.0.1",
+    "globalthis": "^1.0.4",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
-    "sevenzip": "file:../sevenzip",
+    "sevenzip": "github:hnguyen48206/capcitor-seven-zip#android",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
   },
