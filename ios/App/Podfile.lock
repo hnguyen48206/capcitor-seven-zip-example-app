@@ -33,7 +33,7 @@ DEPENDENCIES:
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapawesomeCapacitorFilePicker (from `../../node_modules/@capawesome/capacitor-file-picker`)"
-  - Sevenzip (from `../../node_modules/sevenzip`)
+  - Sevenzip (from `../../../sevenzip`)
 
 SPEC REPOS:
   trunk:
@@ -57,7 +57,7 @@ EXTERNAL SOURCES:
   CapawesomeCapacitorFilePicker:
     :path: "../../node_modules/@capawesome/capacitor-file-picker"
   Sevenzip:
-    :path: "../../node_modules/sevenzip"
+    :path: "../../../sevenzip"
 
 SPEC CHECKSUMS:
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
@@ -71,6 +71,6 @@ SPEC CHECKSUMS:
   PLzmaSDK: f610dff3f04fe09322ea7d9372b6309afe096990
   Sevenzip: 7acbbda4f98e23e830eeacf82ed436a0a2d9493b
 
-PODFILE CHECKSUM: dc7e2abdf7f4ea7e670f94a44d5d5ba871bc81e4
+PODFILE CHECKSUM: 57b2694384036d58a0d2ae38f71ecc6c4b1c7b55
 
 COCOAPODS: 1.15.2

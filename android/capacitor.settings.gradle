@@ -21,4 +21,4 @@ include ':capawesome-capacitor-file-picker'
 project(':capawesome-capacitor-file-picker').projectDir = new File('../node_modules/@capawesome/capacitor-file-picker/android')
 
 include ':sevenzip'
-project(':sevenzip').projectDir = new File('../node_modules/sevenzip/android')
+project(':sevenzip').projectDir = new File('../../sevenzip/android')
