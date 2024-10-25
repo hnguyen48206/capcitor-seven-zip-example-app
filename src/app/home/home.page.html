@@ -1,0 +1,38 @@
+<ion-header [translucent]="true">
+  <ion-toolbar>
+    <ion-title> Blank </ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true">
+  <ion-header collapse="condense">
+    <ion-toolbar>
+      <ion-title size="large">Blank</ion-title>
+    </ion-toolbar>
+  </ion-header>
+
+  <ion-grid>
+    <ion-row>
+      <ion-col>      <ion-button (click)="pickFiles()">Pick Zip File</ion-button>
+        <p>Current Src File: {{currentSrc}}</p></ion-col>
+
+    </ion-row>
+    <ion-row></ion-row>
+    <ion-row>
+      <ion-col>      <ion-button (click)="startUnzip()">Start</ion-button>
+      </ion-col>
+    </ion-row>
+    <ion-row>
+      <ion-col>Current Progress: {{currentProgress}} %</ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>      <ion-button (click)="cancelUnzipping()">cancelUnzipping</ion-button>
+        </ion-col>
+      </ion-row>
+      <ion-row>
+        <ion-col>      <ion-button (click)="setDelayTime()">setDelayTime</ion-button>
+        </ion-col>
+      </ion-row>
+
+  </ion-grid>
+</ion-content>
