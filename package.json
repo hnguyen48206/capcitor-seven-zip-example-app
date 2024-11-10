@@ -32,10 +32,10 @@
     "@capawesome/capacitor-file-picker": "^6.0.1",
     "@ionic/angular": "^8.0.0",
     "array-flat-polyfill": "^1.0.1",
+    "ble-srv": "file:../BLEservicePlugin/ble-srv",
     "globalthis": "^1.0.4",
     "ionicons": "^7.0.0",
     "rxjs": "~7.8.0",
-    "sevenzip": "file:../sevenzip",
     "tslib": "^2.3.0",
     "zone.js": "~0.14.2"
   },

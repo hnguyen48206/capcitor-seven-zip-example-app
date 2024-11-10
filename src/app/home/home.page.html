@@ -13,26 +13,15 @@
 
   <ion-grid>
     <ion-row>
-      <ion-col>      <ion-button (click)="pickFiles()">Pick Zip File</ion-button>
-        <p>Current Src File: {{currentSrc}}</p></ion-col>
-
-    </ion-row>
-    <ion-row></ion-row>
-    <ion-row>
-      <ion-col>      <ion-button (click)="startUnzip()">Start</ion-button>
+      <ion-col>
+        <ion-button (click)="startBLESER()">startBLESER</ion-button>
       </ion-col>
     </ion-row>
-    <ion-row>
-      <ion-col>Current Progress: {{currentProgress}} %</ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>      <ion-button (click)="cancelUnzipping()">cancelUnzipping</ion-button>
-        </ion-col>
-      </ion-row>
-      <ion-row>
-        <ion-col>      <ion-button (click)="setDelayTime()">setDelayTime</ion-button>
-        </ion-col>
-      </ion-row>
 
+    <ion-row>
+      <ion-col>
+        <ion-button (click)="stopBLESER()">stopBLESER</ion-button>
+      </ion-col>
+    </ion-row>
   </ion-grid>
 </ion-content>
