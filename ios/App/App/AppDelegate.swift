@@ -11,6 +11,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         _ application: UIApplication,
         didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
     ) -> Bool {
+        // // Setup Fetch Interval
+        // application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
         // Override point for customization after application launch.
         bleService = BLEForegroundService()
         let wasServiceRunning = UserDefaults.standard.bool(forKey: "serviceRunning")
@@ -40,7 +42,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func applicationWillTerminate(_ application: UIApplication) {
         // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
-        UserDefaults.standard.set(false, forKey: "serviceRunning")
     }
 
     func application(

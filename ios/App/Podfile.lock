@@ -20,7 +20,7 @@ PODS:
     - Capacitor
 
 DEPENDENCIES:
-  - BleSrv (from `../../../capacitor-ble-serv`)
+  - BleSrv (from `../../node_modules/ble-srv`)
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
@@ -33,7 +33,7 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   BleSrv:
-    :path: "../../../capacitor-ble-serv"
+    :path: "../../node_modules/ble-srv"
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
@@ -54,7 +54,7 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capawesome/capacitor-file-picker"
 
 SPEC CHECKSUMS:
-  BleSrv: c6a43c9eafa13cb37ca85c0f6b25b6aa777c32a6
+  BleSrv: 7a6ee2330b25b54db1dabd1cda50e6b3e86f2b55
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
   CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
   CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
@@ -65,6 +65,6 @@ SPEC CHECKSUMS:
   CapacitorStatusBar: b81d4fb5d4e0064c712018071b3ab4b810b39a63
   CapawesomeCapacitorFilePicker: c80c30759ba48986ff34a2b51b23ac2babfd3774
 
-PODFILE CHECKSUM: 26b718d2283be3a23a2f97b026b935ca2a599d16
+PODFILE CHECKSUM: 69d10df54a70073b87ed747cf6f0ad9beb2fa30a
 
 COCOAPODS: 1.15.2

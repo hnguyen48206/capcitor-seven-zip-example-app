@@ -18,7 +18,7 @@ def capacitor_pods
   pod 'CapacitorKeyboard', :path => '../../node_modules/@capacitor/keyboard'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
   pod 'CapawesomeCapacitorFilePicker', :path => '../../node_modules/@capawesome/capacitor-file-picker'
-  pod 'BleSrv', :path => '../../../capacitor-ble-serv'
+  pod 'BleSrv', :path => '../../node_modules/ble-srv'
 end
 
 target 'App' do
