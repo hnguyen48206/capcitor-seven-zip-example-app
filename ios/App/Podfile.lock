@@ -1,9 +1,13 @@
 PODS:
+  - BleSrv (0.0.1):
+    - Capacitor
   - Capacitor (6.1.2):
     - CapacitorCordova
   - CapacitorApp (6.0.1):
     - Capacitor
   - CapacitorCordova (6.1.2)
+  - CapacitorDialog (6.0.1):
+    - Capacitor
   - CapacitorFilesystem (6.0.1):
     - Capacitor
   - CapacitorHaptics (6.0.1):
@@ -14,38 +18,30 @@ PODS:
     - Capacitor
   - CapawesomeCapacitorFilePicker (6.0.1):
     - Capacitor
-  - PLzmaSDK (1.4.7):
-    - PLzmaSDK/libplzma (= 1.4.7)
-    - PLzmaSDK/Swift (= 1.4.7)
-  - PLzmaSDK/libplzma (1.4.7)
-  - PLzmaSDK/Swift (1.4.7):
-    - PLzmaSDK/libplzma
-  - Sevenzip (0.0.1):
-    - Capacitor
-    - PLzmaSDK
 
 DEPENDENCIES:
+  - BleSrv (from `../../../capacitor-ble-serv`)
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
+  - "CapacitorDialog (from `../../node_modules/@capacitor/dialog`)"
   - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapawesomeCapacitorFilePicker (from `../../node_modules/@capawesome/capacitor-file-picker`)"
-  - Sevenzip (from `../../../sevenzip`)
-
-SPEC REPOS:
-  trunk:
-    - PLzmaSDK
 
 EXTERNAL SOURCES:
+  BleSrv:
+    :path: "../../../capacitor-ble-serv"
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
     :path: "../../node_modules/@capacitor/app"
   CapacitorCordova:
     :path: "../../node_modules/@capacitor/ios"
+  CapacitorDialog:
+    :path: "../../node_modules/@capacitor/dialog"
   CapacitorFilesystem:
     :path: "../../node_modules/@capacitor/filesystem"
   CapacitorHaptics:
@@ -56,21 +52,19 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/status-bar"
   CapawesomeCapacitorFilePicker:
     :path: "../../node_modules/@capawesome/capacitor-file-picker"
-  Sevenzip:
-    :path: "../../../sevenzip"
 
 SPEC CHECKSUMS:
+  BleSrv: c6a43c9eafa13cb37ca85c0f6b25b6aa777c32a6
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
   CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
   CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
+  CapacitorDialog: ad752191fdb22a8d0ac199b0754b8a021d86dbf9
   CapacitorFilesystem: 37fb3aa5c945b4539ab11c74a5c57925a302bf24
   CapacitorHaptics: fe689ade56ef20ec9b041a753c6da70c5d8ec9a9
   CapacitorKeyboard: 2700f9b18687be021e28b5a09b59eb151a46d5e0
   CapacitorStatusBar: b81d4fb5d4e0064c712018071b3ab4b810b39a63
   CapawesomeCapacitorFilePicker: c80c30759ba48986ff34a2b51b23ac2babfd3774
-  PLzmaSDK: f610dff3f04fe09322ea7d9372b6309afe096990
-  Sevenzip: 7acbbda4f98e23e830eeacf82ed436a0a2d9493b
 
-PODFILE CHECKSUM: 57b2694384036d58a0d2ae38f71ecc6c4b1c7b55
+PODFILE CHECKSUM: 26b718d2283be3a23a2f97b026b935ca2a599d16
 
 COCOAPODS: 1.15.2
