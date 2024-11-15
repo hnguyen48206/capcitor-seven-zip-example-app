@@ -14,13 +14,15 @@ PODS:
     - Capacitor
   - CapacitorKeyboard (6.0.2):
     - Capacitor
+  - CapacitorPreferences (6.0.2):
+    - Capacitor
   - CapacitorStatusBar (6.0.1):
     - Capacitor
   - CapawesomeCapacitorFilePicker (6.0.1):
     - Capacitor
 
 DEPENDENCIES:
-  - BleSrv (from `../../node_modules/ble-srv`)
+  - BleSrv (from `../../../capacitor-ble-serv`)
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
@@ -28,12 +30,13 @@ DEPENDENCIES:
   - "CapacitorFilesystem (from `../../node_modules/@capacitor/filesystem`)"
   - "CapacitorHaptics (from `../../node_modules/@capacitor/haptics`)"
   - "CapacitorKeyboard (from `../../node_modules/@capacitor/keyboard`)"
+  - "CapacitorPreferences (from `../../node_modules/@capacitor/preferences`)"
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapawesomeCapacitorFilePicker (from `../../node_modules/@capawesome/capacitor-file-picker`)"
 
 EXTERNAL SOURCES:
   BleSrv:
-    :path: "../../node_modules/ble-srv"
+    :path: "../../../capacitor-ble-serv"
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
@@ -48,6 +51,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capacitor/haptics"
   CapacitorKeyboard:
     :path: "../../node_modules/@capacitor/keyboard"
+  CapacitorPreferences:
+    :path: "../../node_modules/@capacitor/preferences"
   CapacitorStatusBar:
     :path: "../../node_modules/@capacitor/status-bar"
   CapawesomeCapacitorFilePicker:
@@ -62,9 +67,10 @@ SPEC CHECKSUMS:
   CapacitorFilesystem: 37fb3aa5c945b4539ab11c74a5c57925a302bf24
   CapacitorHaptics: fe689ade56ef20ec9b041a753c6da70c5d8ec9a9
   CapacitorKeyboard: 2700f9b18687be021e28b5a09b59eb151a46d5e0
+  CapacitorPreferences: e8284bf740cf8c6d3f25409af3c01df87dfeb5a1
   CapacitorStatusBar: b81d4fb5d4e0064c712018071b3ab4b810b39a63
   CapawesomeCapacitorFilePicker: c80c30759ba48986ff34a2b51b23ac2babfd3774
 
-PODFILE CHECKSUM: 69d10df54a70073b87ed747cf6f0ad9beb2fa30a
+PODFILE CHECKSUM: db7a57a6660288356d7d4b4130f00290ba7a6f39
 
 COCOAPODS: 1.15.2
