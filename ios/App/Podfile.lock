@@ -6,23 +6,23 @@ PODS:
   - CapacitorApp (6.0.1):
     - Capacitor
   - CapacitorCordova (6.1.2)
-  - CapacitorDialog (6.0.1):
+  - CapacitorDialog (6.0.2):
     - Capacitor
-  - CapacitorFilesystem (6.0.1):
+  - CapacitorFilesystem (6.0.2):
     - Capacitor
   - CapacitorHaptics (6.0.1):
     - Capacitor
   - CapacitorKeyboard (6.0.2):
     - Capacitor
-  - CapacitorPreferences (6.0.2):
+  - CapacitorPreferences (6.0.3):
     - Capacitor
   - CapacitorStatusBar (6.0.1):
     - Capacitor
-  - CapawesomeCapacitorFilePicker (6.0.1):
+  - CapawesomeCapacitorFilePicker (6.2.0):
     - Capacitor
 
 DEPENDENCIES:
-  - BleSrv (from `../../../capacitor-ble-serv`)
+  - BleSrv (from `../../node_modules/ble-srv`)
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
@@ -36,7 +36,7 @@ DEPENDENCIES:
 
 EXTERNAL SOURCES:
   BleSrv:
-    :path: "../../../capacitor-ble-serv"
+    :path: "../../node_modules/ble-srv"
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
@@ -63,14 +63,14 @@ SPEC CHECKSUMS:
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
   CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
   CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
-  CapacitorDialog: ad752191fdb22a8d0ac199b0754b8a021d86dbf9
-  CapacitorFilesystem: 37fb3aa5c945b4539ab11c74a5c57925a302bf24
+  CapacitorDialog: e966e2261e1c74a8a502e610dd66b4f97ec6fcca
+  CapacitorFilesystem: c832a3f6d4870c3872688e782ae8e33665e6ecbf
   CapacitorHaptics: fe689ade56ef20ec9b041a753c6da70c5d8ec9a9
   CapacitorKeyboard: 2700f9b18687be021e28b5a09b59eb151a46d5e0
-  CapacitorPreferences: e8284bf740cf8c6d3f25409af3c01df87dfeb5a1
+  CapacitorPreferences: 9f9935bce493977183511362131a93f7b260191a
   CapacitorStatusBar: b81d4fb5d4e0064c712018071b3ab4b810b39a63
-  CapawesomeCapacitorFilePicker: c80c30759ba48986ff34a2b51b23ac2babfd3774
+  CapawesomeCapacitorFilePicker: c14df1f5a23226039e0cb82b171cf5a351470459
 
-PODFILE CHECKSUM: db7a57a6660288356d7d4b4130f00290ba7a6f39
+PODFILE CHECKSUM: 439f8fed8ec0bdb1711aafd72fc785a38e3832f5
 
 COCOAPODS: 1.15.2
