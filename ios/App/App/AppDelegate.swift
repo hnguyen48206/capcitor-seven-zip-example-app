@@ -5,7 +5,7 @@ import UIKit
 class AppDelegate: UIResponder, UIApplicationDelegate {
 
     var window: UIWindow?
-    var bleService: BLEForegroundService?
+    // var bleService: BLEForegroundService?
 
     func application(
         _ application: UIApplication,
@@ -14,11 +14,13 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         // // Setup Fetch Interval
         // application.setMinimumBackgroundFetchInterval(UIApplication.backgroundFetchIntervalMinimum)
         // Override point for customization after application launch.
-        bleService = BLEForegroundService()
-        let wasServiceRunning = UserDefaults.standard.bool(forKey: "serviceRunning")
-        if wasServiceRunning {
-            bleService?.startService()
-        }
+
+        // bleService = BLEForegroundService()
+        // let wasServiceRunning = UserDefaults.standard.bool(forKey: "serviceRunning")
+        // if wasServiceRunning {
+        //     bleService?.startService()
+        // }
+        
         return true
     }
 
