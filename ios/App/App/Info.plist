@@ -35,6 +35,7 @@
 		<string>bluetooth-central</string>
 		<string>fetch</string>
 		<string>processing</string>
+		<string>bluetooth-peripheral</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>

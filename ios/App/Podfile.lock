@@ -1,5 +1,9 @@
 PODS:
+  - BGTasks (1.0.5):
+    - BGTasks/Core (= 1.0.5)
+  - BGTasks/Core (1.0.5)
   - BleSrv (0.0.1):
+    - BGTasks
     - Capacitor
   - Capacitor (6.1.2):
     - CapacitorCordova
@@ -34,6 +38,10 @@ DEPENDENCIES:
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapawesomeCapacitorFilePicker (from `../../node_modules/@capawesome/capacitor-file-picker`)"
 
+SPEC REPOS:
+  trunk:
+    - BGTasks
+
 EXTERNAL SOURCES:
   BleSrv:
     :path: "../../../capacitor-ble-serv"
@@ -59,7 +67,8 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capawesome/capacitor-file-picker"
 
 SPEC CHECKSUMS:
-  BleSrv: 7a6ee2330b25b54db1dabd1cda50e6b3e86f2b55
+  BGTasks: 8098f9d010681088bb0f8a7013dfb0a723b012d4
+  BleSrv: f9e1ab8581c86ebcba004ce702ebb9b419045ddc
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
   CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
   CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd

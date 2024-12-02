@@ -1,7 +1,7 @@
 import Capacitor
 import UIKit
 import BleSrv
-import BackgroundTasks
+import BGTasks
 
 @available(iOS 14.0, *)
 @UIApplicationMain
@@ -15,13 +15,21 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv", using: nil) { task in
-      self.bleService.handleAppRefresh(task: task as! BGAppRefreshTask)
+    
+    
+    
+    if #available(iOS 13.0, *) {
+      let permittedIdentifiers: [BGTaskSchedulerType: String] = [
+        .appRefreshTask: "com.hnguyen48206.blesrv"
+      ]
+      
+      let config = BGConfigurationProvider.RegistrationData(permittedIdentifiers: permittedIdentifiers)
+      BGConfigurationProvider.shared.configure(config: config)
+      
     }
     
-    
-    print("Register OK")
-    
+    self.bleService.performBGTask(force: true, completionHandler: nil)
+
     return true
   }
   func applicationWillResignActive(_ application: UIApplication) {
@@ -32,7 +40,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func applicationDidEnterBackground(_ application: UIApplication) {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    self.bleService.scheduleAppRefresh()
   }
   
   func applicationWillEnterForeground(_ application: UIApplication) {
@@ -67,3 +74,4 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   
 }
+
