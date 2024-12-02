@@ -17,12 +17,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     bleManager = BLEManager()
 
     BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv", using: nil) { task in
-      self.handleBLEScan(task: task as! BGAppRefreshTask)
+//      BGProcessingTask
+//      BGAppRefreshTask
+      self.handleBLEScan(task: task as! BGProcessingTask)
     }
     
     return true
   }
-  func handleBLEScan(task: BGAppRefreshTask) {
+  func handleBLEScan(task: BGProcessingTask) {
       bleManager.scheduleBLEScan() // Schedule the next scan
       print("[DEBUG] - Start Scanning in BG")
       os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
@@ -56,6 +58,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     self.bleManager.logger.log("[DEBUG] - BG MODE")
+    bleManager.stopScanningInForeground(autorestart: false)
     bleManager.scheduleBLEScan() // Schedule the next scan
   }
   

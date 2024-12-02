@@ -22,6 +22,7 @@ struct VehicleIsMoving: Codable {
 
 @available(iOS 14.0, *)
 class BLEManager: NSObject, CBCentralManagerDelegate {
+  let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180A")]
   var centralManager: CBCentralManager!
   var targetPeripheral: CBPeripheral?
   let logger: Logger = Logger(subsystem: "com.hnguyen48206.blesrv", category: "background")
@@ -44,7 +45,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   
   override init() {
     super.init()
-    centralManager = CBCentralManager(delegate: self, queue: nil)
+    centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
   }
   
   func reloadLocalStorage()
@@ -91,10 +92,15 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   }
   
   func centralManagerDidUpdateState(_ central: CBCentralManager) {
-    if central.state == .poweredOn {
+    switch central.state {
+    case .poweredOn:
       startScanningInForeground()
       print("[DEBUG] - Start Scanning From Load")
       os_log("[DEBUG] - Start Scanning From Load", log: OSLog.default, type: .debug)
+    case .poweredOff, .unauthorized, .unsupported, .unknown, .resetting:
+      print("Bluetooth is not available.")
+    @unknown default:
+      print("A new state is available that is not handled.")
     }
   }
   
@@ -103,40 +109,50 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     isScanning = true;
     if(Vehicle_IsMoving.Vehicle_IsMoving)
     {
-      centralManager.scanForPeripherals(withServices: nil, options: nil)
+      centralManager.scanForPeripherals(withServices: serviceUUIDs, options: nil)
+      os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
     }
   }
   
   func startScanningInForeground() {
-    print("[DEBUG] - Start Scanning in FG")
-    reloadLocalStorage()
-    isScanning = true;
-    if(Vehicle_IsMoving.Vehicle_IsMoving)
-    {
-      centralManager.scanForPeripherals(withServices: nil, options: nil)
-      let taskID = timer.executeAfterDelay(delay: SCAN_PERIOD) {
-        self.stopScanningInForeground()
+    DispatchQueue.main.asyncAfter(deadline: .now()) {
+      print("[DEBUG] - Start Scanning in FG")
+      //      os_log("[DEBUG] - Start Scanning in Foreground", log: OSLog.default, type: .debug)
+      
+      self.reloadLocalStorage()
+      if(self.Vehicle_IsMoving.Vehicle_IsMoving)
+      {
+        self.isScanning = true;
+        self.centralManager.scanForPeripherals(withServices: nil, options: nil)
+      }
+      self.timer.executeAfterDelay(delay: self.SCAN_PERIOD) {
+        self.stopScanningInForeground(autorestart: true)
       }
     }
-    
   }
   
   func stopScanning() {
     isScanning = false
     centralManager.stopScan()
     updateDeviceStatus()
-    print("Stop Scanning")
-    os_log("[DEBUG] - Stop Scanning", log: OSLog.default, type: .debug)
+    //    print("Stop Scanning")
+    os_log("[DEBUG] - Stop Scanning in BG", log: OSLog.default, type: .debug)
   }
   
-  func stopScanningInForeground() {
-    isScanning = false
-    centralManager.stopScan()
-    updateDeviceStatus()
-    print("Stop Scanning")
-    os_log("[DEBUG] - Stop Scanning in Foreground", log: OSLog.default, type: .debug)
-    let taskID = timer.executeAfterDelay(delay: SCAN_DELAY) {
-      self.startScanningInForeground()
+  public func stopScanningInForeground(autorestart:Bool) {
+    if(isScanning)
+    {
+      isScanning = false
+      centralManager.stopScan()
+      updateDeviceStatus()
+    }
+    print("Stop Scanning in FG \(autorestart)")
+    //    os_log("[DEBUG] - Stop Scanning in Foreground", log: OSLog.default, type: .debug)
+    if(autorestart)
+    {
+      let taskID = timer.executeAfterDelay(delay: SCAN_DELAY) {
+        self.startScanningInForeground()
+      }
     }
   }
   
@@ -168,15 +184,18 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
     // Handle discovered peripheral
     //    self.count+=1
-    print("\(count) - Discovered \(peripheral.name ?? "unknown device") \(peripheral.identifier.uuidString)")
-    logger.log("[DEBUG] - \(self.count) - Discovered \(peripheral.name ?? "unknown device") \(peripheral.identifier.uuidString)")
+    let msg = "[DEBUG] - \(self.count) - Discovered \(peripheral.name ?? "unknown device") \(peripheral.identifier.uuidString)"
+    print(msg)
+    os_log("[DEBUG] DEVICE FOUND", log: OSLog.default, type: .debug)
     
     detectedDevices.insert(peripheral.identifier.uuidString)
   }
   
   
   func scheduleBLEScan() {
-    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv")
+    //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv")
+    let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv")
+    
     request.earliestBeginDate = Date(timeIntervalSinceNow: SCAN_DELAY)
     do {
       try BGTaskScheduler.shared.submit(request)
