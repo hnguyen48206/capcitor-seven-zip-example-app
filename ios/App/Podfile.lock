@@ -1,10 +1,4 @@
 PODS:
-  - BGTasks (1.0.5):
-    - BGTasks/Core (= 1.0.5)
-  - BGTasks/Core (1.0.5)
-  - BleSrv (0.0.1):
-    - BGTasks
-    - Capacitor
   - Capacitor (6.1.2):
     - CapacitorCordova
   - CapacitorApp (6.0.1):
@@ -26,7 +20,6 @@ PODS:
     - Capacitor
 
 DEPENDENCIES:
-  - BleSrv (from `../../../capacitor-ble-serv`)
   - "Capacitor (from `../../node_modules/@capacitor/ios`)"
   - "CapacitorApp (from `../../node_modules/@capacitor/app`)"
   - "CapacitorCordova (from `../../node_modules/@capacitor/ios`)"
@@ -38,13 +31,7 @@ DEPENDENCIES:
   - "CapacitorStatusBar (from `../../node_modules/@capacitor/status-bar`)"
   - "CapawesomeCapacitorFilePicker (from `../../node_modules/@capawesome/capacitor-file-picker`)"
 
-SPEC REPOS:
-  trunk:
-    - BGTasks
-
 EXTERNAL SOURCES:
-  BleSrv:
-    :path: "../../../capacitor-ble-serv"
   Capacitor:
     :path: "../../node_modules/@capacitor/ios"
   CapacitorApp:
@@ -67,8 +54,6 @@ EXTERNAL SOURCES:
     :path: "../../node_modules/@capawesome/capacitor-file-picker"
 
 SPEC CHECKSUMS:
-  BGTasks: 8098f9d010681088bb0f8a7013dfb0a723b012d4
-  BleSrv: f9e1ab8581c86ebcba004ce702ebb9b419045ddc
   Capacitor: 679f9673fdf30597493a6362a5d5bf233d46abc2
   CapacitorApp: 0bc633b4eae40a1f32cd2834788fad3bc42da6a1
   CapacitorCordova: f48c89f96c319101cd2f0ce8a2b7449b5fb8b3dd
@@ -80,6 +65,6 @@ SPEC CHECKSUMS:
   CapacitorStatusBar: b81d4fb5d4e0064c712018071b3ab4b810b39a63
   CapawesomeCapacitorFilePicker: c14df1f5a23226039e0cb82b171cf5a351470459
 
-PODFILE CHECKSUM: db7a57a6660288356d7d4b4130f00290ba7a6f39
+PODFILE CHECKSUM: 14d78d5c98f2b81f3915a409192897b25ee07743
 
 COCOAPODS: 1.15.2

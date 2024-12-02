@@ -1,37 +1,53 @@
 import Capacitor
+import BackgroundTasks
 import UIKit
-import BleSrv
-import BGTasks
-
+import os.log
 @available(iOS 14.0, *)
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
   
   var window: UIWindow?
-  //    var bleService: BLEServ?
-  let bleService = BLEServPlugin()
-  
+  var bleManager: BLEManager!
+  private lazy var timer = BackgroundTimer(delegate: nil)
+
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    
-    
-    
-    if #available(iOS 13.0, *) {
-      let permittedIdentifiers: [BGTaskSchedulerType: String] = [
-        .appRefreshTask: "com.hnguyen48206.blesrv"
-      ]
-      
-      let config = BGConfigurationProvider.RegistrationData(permittedIdentifiers: permittedIdentifiers)
-      BGConfigurationProvider.shared.configure(config: config)
-      
+    bleManager = BLEManager()
+
+    BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv", using: nil) { task in
+      self.handleBLEScan(task: task as! BGAppRefreshTask)
     }
     
-    self.bleService.performBGTask(force: true, completionHandler: nil)
-
     return true
   }
+  func handleBLEScan(task: BGAppRefreshTask) {
+      bleManager.scheduleBLEScan() // Schedule the next scan
+
+      bleManager.startScanning()
+    
+      print("[DEBUG] - Start Scanning in BG")
+      os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
+
+      let taskID = self.timer.executeAfterDelay(delay: 10) {
+        print("[DEBUG] - Should STOP NOW")
+        self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
+        self.bleManager.stopScanning()
+        task.setTaskCompleted(success: false)
+      }
+ 
+    task.expirationHandler = {
+      print("[DEBUG] - Should STOP NOW")
+      self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
+      self.bleManager.stopScanning()
+      task.setTaskCompleted(success: false)
+    }
+    
+
+  }
+  
+  
   func applicationWillResignActive(_ application: UIApplication) {
     // Sent when the application is about to move from active to inactive state. This can occur for certain types of temporary interruptions (such as an incoming phone call or SMS message) or when the user quits the application and it begins the transition to the background state.
     // Use this method to pause ongoing tasks, disable timers, and invalidate graphics rendering callbacks. Games should use this method to pause the game.
@@ -40,6 +56,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func applicationDidEnterBackground(_ application: UIApplication) {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
+    self.bleManager.logger.log("[DEBUG] - BG MODE")
+    bleManager.scheduleBLEScan() // Schedule the next scan
   }
   
   func applicationWillEnterForeground(_ application: UIApplication) {

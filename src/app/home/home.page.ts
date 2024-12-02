@@ -1,5 +1,4 @@
 import { Component } from '@angular/core';
-import { BLEServ } from 'ble-srv';
 import { Preferences } from '@capacitor/preferences';
 
 @Component({
@@ -18,13 +17,13 @@ export class HomePage {
   }
 
   async startBLESER() {
-    await BLEServ.startService();
+    // await BLEServ.startService();
     this.updateInterval = setInterval(() => {
       this.getCurrentList();
     }, 2000);
   }
   async stopBLESER() {
-    await BLEServ.stopService();
+    // await BLEServ.stopService();
     if (this.updateInterval != null) clearInterval(this.updateInterval);
   }
   async getCurrentList() {
