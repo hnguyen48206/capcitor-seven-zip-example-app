@@ -24,13 +24,12 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   func handleBLEScan(task: BGAppRefreshTask) {
       bleManager.scheduleBLEScan() // Schedule the next scan
-
-      bleManager.startScanning()
-    
       print("[DEBUG] - Start Scanning in BG")
       os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
-
-      let taskID = self.timer.executeAfterDelay(delay: 10) {
+      bleManager.startScanning()
+   
+      //In BG, scan only for 10s each
+      self.timer.executeAfterDelay(delay: 10) {
         print("[DEBUG] - Should STOP NOW")
         self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
         self.bleManager.stopScanning()

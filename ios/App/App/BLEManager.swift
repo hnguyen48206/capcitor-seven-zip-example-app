@@ -108,6 +108,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   }
   
   func startScanningInForeground() {
+    print("[DEBUG] - Start Scanning in FG")
     reloadLocalStorage()
     isScanning = true;
     if(Vehicle_IsMoving.Vehicle_IsMoving)
