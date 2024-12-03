@@ -33,9 +33,9 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   var Vehicle_IsMovingStr: String?
   
   var listOfSavedDevice = [BLEDevice]()
-  var BLEConfigs = BLEConfig(scan_period:5000, scan_delay:10000)
+  var BLEConfigs = BLEConfig(scan_period:15000, scan_delay:10000)
   var Vehicle_IsMoving =  VehicleIsMoving(Vehicle_IsMoving: true)
-  var SCAN_PERIOD: TimeInterval = 5.0
+  var SCAN_PERIOD: TimeInterval = 15.0
   var SCAN_DELAY: TimeInterval = 10.0
   var targetDevice: CBPeripheral?
   private var detectedDevices: Set<String> = []
@@ -61,7 +61,9 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
           print("Unable to convert MacBluetoothsConnectedStr to data")
           return
         }
+        print("MacBluetoothsConnectedData \(MacBluetoothsConnectedData)")
         listOfSavedDevice = try JSONDecoder().decode([BLEDevice].self, from: MacBluetoothsConnectedData)
+        print("listOfSavedDevice \(listOfSavedDevice.description)")
       }
       
       if(BLEConfigsStr != "")
@@ -168,6 +170,11 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   
   func updateDeviceStatus()
   {
+    
+//    for device in listOfSavedDevice {
+//      print("MAC: \(device.mac)")
+//    }
+    
     var newListOfSavedDevice = [BLEDevice]()
     listOfSavedDevice.forEach { device in
       if(detectedDevices.contains(device.mac))
