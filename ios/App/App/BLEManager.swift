@@ -22,7 +22,6 @@ struct VehicleIsMoving: Codable {
 
 @available(iOS 14.0, *)
 class BLEManager: NSObject, CBCentralManagerDelegate {
-  let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180A")]
   var centralManager: CBCentralManager!
   var targetPeripheral: CBPeripheral?
   let logger: Logger = Logger(subsystem: "com.hnguyen48206.blesrv", category: "background")
@@ -38,7 +37,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   var Vehicle_IsMoving =  VehicleIsMoving(Vehicle_IsMoving: true)
   var SCAN_PERIOD: TimeInterval = 5.0
   var SCAN_DELAY: TimeInterval = 10.0
-  
+  var targetDevice: CBPeripheral?
   private var detectedDevices: Set<String> = []
   
   private var isScanning = false
@@ -51,10 +50,10 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func reloadLocalStorage()
   {
     detectedDevices.removeAll()
-    MacBluetoothsConnectedStr = UserDefaults.standard.string(forKey: "MacBluetoothsConnected") ?? ""
-    BLEConfigsStr = UserDefaults.standard.string(forKey: "BLEConfigs") ?? ""
-    Vehicle_IsMovingStr = UserDefaults.standard.string(forKey: "Vehicle_IsMoving") ?? ""
-    
+    MacBluetoothsConnectedStr = UserDefaults.standard.string(forKey: "CapacitorStorage.MacBluetoothsConnected") ?? ""
+    BLEConfigsStr = UserDefaults.standard.string(forKey: "CapacitorStorage.BLEConfigs") ?? ""
+    Vehicle_IsMovingStr = UserDefaults.standard.string(forKey: "CapacitorStorage.Vehicle_IsMoving") ?? ""
+    print("MacBluetoothsConnectedStr \(MacBluetoothsConnectedStr)")
     do {
       if(MacBluetoothsConnectedStr != "")
       {
@@ -105,16 +104,26 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   }
   
   func startScanning() {
+    let options: [String: Any] = [
+    CBCentralManagerScanOptionAllowDuplicatesKey: false,
+//    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
+    ]
+    let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x181D")] //weight sclae service
+
     reloadLocalStorage()
     isScanning = true;
     if(Vehicle_IsMoving.Vehicle_IsMoving)
     {
-      centralManager.scanForPeripherals(withServices: serviceUUIDs, options: nil)
+      centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
       os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
     }
   }
   
   func startScanningInForeground() {
+    let options: [String: Any] = [
+    CBCentralManagerScanOptionAllowDuplicatesKey: false,
+//    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
+    ]
     DispatchQueue.main.asyncAfter(deadline: .now()) {
       print("[DEBUG] - Start Scanning in FG")
       //      os_log("[DEBUG] - Start Scanning in Foreground", log: OSLog.default, type: .debug)
@@ -123,7 +132,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       if(self.Vehicle_IsMoving.Vehicle_IsMoving)
       {
         self.isScanning = true;
-        self.centralManager.scanForPeripherals(withServices: nil, options: nil)
+        self.centralManager.scanForPeripherals(withServices: nil, options: options)
       }
       self.timer.executeAfterDelay(delay: self.SCAN_PERIOD) {
         self.stopScanningInForeground(autorestart: true)
@@ -175,7 +184,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     do {
       let jsonData = try JSONEncoder().encode(newListOfSavedDevice)
       let jsonString = String(data: jsonData, encoding: .utf8)
-      UserDefaults.standard.set(jsonString, forKey: "MacBluetoothsConnected")
+      UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.MacBluetoothsConnected")
     } catch {
       print("Failed to encode devices: \(error.localizedDescription)")
     }
@@ -189,6 +198,28 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     os_log("[DEBUG] DEVICE FOUND", log: OSLog.default, type: .debug)
     
     detectedDevices.insert(peripheral.identifier.uuidString)
+    
+    if(peripheral.identifier.uuidString == "9ABD8859-2F6E-1324-D40A-02D652F5C43C")
+    {
+      targetDevice = peripheral
+      connectDevice()
+    }
+  }
+  
+  func connectDevice()
+  {
+    if(targetDevice != nil)
+    {
+      centralManager.connect(targetDevice!, options: nil)
+    }
+  }
+  
+  func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
+    print("Connected to \(peripheral.name ?? "Unknown")")
+  }
+  
+  func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
+    print("Failed to connect to \(peripheral.name ?? "Unknown"): \(error?.localizedDescription ?? "No error information")")
   }
   
   
