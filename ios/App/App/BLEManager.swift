@@ -174,7 +174,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
 //    for device in listOfSavedDevice {
 //      print("MAC: \(device.mac)")
 //    }
-    
+    reloadLocalStorage()
     var newListOfSavedDevice = [BLEDevice]()
     listOfSavedDevice.forEach { device in
       if(detectedDevices.contains(device.mac))
@@ -206,11 +206,11 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     
     detectedDevices.insert(peripheral.identifier.uuidString)
     
-    if(peripheral.identifier.uuidString == "9ABD8859-2F6E-1324-D40A-02D652F5C43C")
-    {
-      targetDevice = peripheral
-      connectDevice()
-    }
+//    if(peripheral.identifier.uuidString == "9ABD8859-2F6E-1324-D40A-02D652F5C43C")
+//    {
+//      targetDevice = peripheral
+//      connectDevice()
+//    }
   }
   
   func connectDevice()
