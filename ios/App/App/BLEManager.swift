@@ -164,6 +164,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       let taskID = timer.executeAfterDelay(delay: SCAN_DELAY) {
         self.startScanningInForeground()
       }
+      
     }
   }
   
@@ -200,7 +201,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func centralManager(_ central: CBCentralManager, didDiscover peripheral: CBPeripheral, advertisementData: [String : Any], rssi RSSI: NSNumber) {
     // Handle discovered peripheral
     //    self.count+=1
-    let msg = "[DEBUG] - \(self.count) - Discovered \(peripheral.name ?? "unknown device") \(peripheral.identifier.uuidString)"
+    let msg = "[DEBUG] - \(self.count) - Discovered \(peripheral.name ?? "unknown device") \(peripheral.identifier.uuidString) \(peripheral.state)"
     print(msg)
     os_log("[DEBUG] DEVICE FOUND", log: OSLog.default, type: .debug)
     
@@ -233,7 +234,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func scheduleBLEScan() {
     //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv")
     let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv")
-    
+    request.requiresNetworkConnectivity = false
+    request.requiresExternalPower = false
     request.earliestBeginDate = Date(timeIntervalSinceNow: SCAN_DELAY)
     do {
       try BGTaskScheduler.shared.submit(request)

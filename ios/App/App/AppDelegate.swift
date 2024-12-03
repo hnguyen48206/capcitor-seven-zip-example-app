@@ -32,14 +32,14 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
    
       //In BG, scan only for 10s each
       self.timer.executeAfterDelay(delay: 10) {
-        print("[DEBUG] - Should STOP NOW")
+        print("[DEBUG] - Should STOP NOW - By Task")
         self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
         self.bleManager.stopScanning()
         task.setTaskCompleted(success: false)
       }
  
     task.expirationHandler = {
-      print("[DEBUG] - Should STOP NOW")
+      print("[DEBUG] - Should STOP NOW - By Expiration")
       self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
       self.bleManager.stopScanning()
       task.setTaskCompleted(success: false)
