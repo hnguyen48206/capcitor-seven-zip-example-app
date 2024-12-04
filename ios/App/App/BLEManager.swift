@@ -38,6 +38,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   var SCAN_PERIOD: TimeInterval = 15.0
   var SCAN_DELAY: TimeInterval = 10.0
   var targetDevice: CBPeripheral?
+  var isFB = true
   private var detectedDevices: Set<String> = []
   
   private var isScanning = false
@@ -110,7 +111,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     CBCentralManagerScanOptionAllowDuplicatesKey: false,
 //    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
     ]
-    let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x181D")] //weight sclae service
+    // let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x181D")] //weight sclae service
+    let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180A")] //carmd m2 device info service
 
     reloadLocalStorage()
     isScanning = true;
@@ -129,12 +131,15 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     DispatchQueue.main.asyncAfter(deadline: .now()) {
       print("[DEBUG] - Start Scanning in FG")
       //      os_log("[DEBUG] - Start Scanning in Foreground", log: OSLog.default, type: .debug)
-      
-      self.reloadLocalStorage()
-      if(self.Vehicle_IsMoving.Vehicle_IsMoving)
+      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFB)
       {
+        self.reloadLocalStorage()
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: nil, options: options)
+      }
+      else
+      {
+        print("[DEBUG] - Not moving or in BG \(self.Vehicle_IsMoving.Vehicle_IsMoving) \(self.isFB)")
       }
       self.timer.executeAfterDelay(delay: self.SCAN_PERIOD) {
         self.stopScanningInForeground(autorestart: true)
@@ -164,7 +169,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       let taskID = timer.executeAfterDelay(delay: SCAN_DELAY) {
         self.startScanningInForeground()
       }
-      
     }
   }
   
@@ -176,25 +180,28 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
 //      print("MAC: \(device.mac)")
 //    }
     reloadLocalStorage()
-    var newListOfSavedDevice = [BLEDevice]()
-    listOfSavedDevice.forEach { device in
-      if(detectedDevices.contains(device.mac))
-      {
-        let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "on")
-        newListOfSavedDevice.append(newDevice)
+    if(!listOfSavedDevice.isEmpty)
+    {
+      var newListOfSavedDevice = [BLEDevice]()
+      listOfSavedDevice.forEach { device in
+        if(detectedDevices.contains(device.mac))
+        {
+          let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "on")
+          newListOfSavedDevice.append(newDevice)
+        }
+        else
+        {
+          let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "off")
+          newListOfSavedDevice.append(newDevice)
+        }
       }
-      else
-      {
-        let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "off")
-        newListOfSavedDevice.append(newDevice)
+      do {
+        let jsonData = try JSONEncoder().encode(newListOfSavedDevice)
+        let jsonString = String(data: jsonData, encoding: .utf8)
+        UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.MacBluetoothsConnected")
+      } catch {
+        print("Failed to encode devices: \(error.localizedDescription)")
       }
-    }
-    do {
-      let jsonData = try JSONEncoder().encode(newListOfSavedDevice)
-      let jsonString = String(data: jsonData, encoding: .utf8)
-      UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.MacBluetoothsConnected")
-    } catch {
-      print("Failed to encode devices: \(error.localizedDescription)")
     }
   }
   
