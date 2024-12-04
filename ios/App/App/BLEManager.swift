@@ -48,9 +48,12 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
   }
   
-  func reloadLocalStorage()
+  func reloadLocalStorage(clearDetectedDevices:Bool = true)
   {
-    detectedDevices.removeAll()
+    if(clearDetectedDevices)
+    {
+      detectedDevices.removeAll()
+    }
     MacBluetoothsConnectedStr = UserDefaults.standard.string(forKey: "CapacitorStorage.MacBluetoothsConnected") ?? ""
     BLEConfigsStr = UserDefaults.standard.string(forKey: "CapacitorStorage.BLEConfigs") ?? ""
     Vehicle_IsMovingStr = UserDefaults.standard.string(forKey: "CapacitorStorage.Vehicle_IsMoving") ?? ""
@@ -179,7 +182,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
 //    for device in listOfSavedDevice {
 //      print("MAC: \(device.mac)")
 //    }
-    reloadLocalStorage()
+    reloadLocalStorage(clearDetectedDevices: false)
     if(!listOfSavedDevice.isEmpty)
     {
       var newListOfSavedDevice = [BLEDevice]()
