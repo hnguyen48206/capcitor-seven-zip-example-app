@@ -16,7 +16,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   ) -> Bool {
     bleManager = BLEManager()
 
-    BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv", using: nil) { task in
+    BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv.ios", using: nil) { task in
 //      BGProcessingTask
 //      BGAppRefreshTask
       self.handleBLEScan(task: task as! BGProcessingTask)

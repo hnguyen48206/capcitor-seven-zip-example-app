@@ -4,7 +4,7 @@
 <dict>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>com.hnguyen48206.blesrv</string>
+		<string>com.hnguyen48206.blesrv.ios</string>
 	</array>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>

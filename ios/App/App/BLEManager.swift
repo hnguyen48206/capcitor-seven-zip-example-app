@@ -24,7 +24,7 @@ struct VehicleIsMoving: Codable {
 class BLEManager: NSObject, CBCentralManagerDelegate {
   var centralManager: CBCentralManager!
   var targetPeripheral: CBPeripheral?
-  let logger: Logger = Logger(subsystem: "com.hnguyen48206.blesrv", category: "background")
+  let logger: Logger = Logger(subsystem: "com.hnguyen48206.blesrv.ios", category: "background")
   var count = 0;
   private lazy var timer = BackgroundTimer(delegate: nil)
   
@@ -112,10 +112,10 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func startScanning() {
     let options: [String: Any] = [
     CBCentralManagerScanOptionAllowDuplicatesKey: false,
-//    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
+    CBConnectPeripheralOptionNotifyOnConnectionKey: true
     ]
     // let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x181D")] //weight sclae service
-    let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180A"), CBUUID(string: "0x181D")] //carmd m2 device info service
+    let serviceUUIDs = [CBUUID(string: "0x180A"), CBUUID(string: "0x181D"), CBUUID(string: "0xFFF0")]
 
     reloadLocalStorage()
     isScanning = true;
@@ -134,7 +134,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       {
         let options: [String: Any] = [
         CBCentralManagerScanOptionAllowDuplicatesKey: false,
-    //    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
+        CBConnectPeripheralOptionNotifyOnConnectionKey: true
         ]
         print("[DEBUG] - Start Scanning in FG")
         self.reloadLocalStorage()
@@ -146,6 +146,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
         print("[DEBUG] - Start Scanning in BG plus")
         let serviceUUIDs = [CBUUID(string: "0x180A"), CBUUID(string: "0x181D"), CBUUID(string: "0xFFF0")]
         let options: [String: Any] = [
+        CBConnectPeripheralOptionNotifyOnConnectionKey: true,
         CBCentralManagerScanOptionAllowDuplicatesKey: false,
         CBCentralManagerScanOptionSolicitedServiceUUIDsKey: serviceUUIDs
         ]
@@ -255,8 +256,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   
   
   func scheduleBLEScan() {
-    //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv")
-    let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv")
+    //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
+    let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
     request.requiresNetworkConnectivity = false
     request.requiresExternalPower = false
     request.earliestBeginDate = Date(timeIntervalSinceNow: SCAN_DELAY)
