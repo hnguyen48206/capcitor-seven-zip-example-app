@@ -39,7 +39,8 @@ export class HomePage {
         mac: this.addDeviceID,
         vehicleID: 'ABC',
         status: 'on',
-        deviceName: 'test'
+        deviceName: 'test',
+        isAutoConnect: false
       });
       await Preferences.set({
         key: 'MacBluetoothsConnected',

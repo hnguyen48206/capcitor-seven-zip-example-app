@@ -2,12 +2,14 @@ import CoreBluetooth
 import BackgroundTasks
 import UIKit
 import os.log
+import UserNotifications
 
 struct BLEDevice: Codable {
   let mac: String
   let deviceName: String
   let vehicleID: String
   let status: String
+  let isAutoConnect: Bool
 }
 
 struct BLEConfig: Codable {
@@ -33,9 +35,9 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   var Vehicle_IsMovingStr: String?
   
   var listOfSavedDevice = [BLEDevice]()
-  var BLEConfigs = BLEConfig(scan_period:15000, scan_delay:10000)
+  var BLEConfigs = BLEConfig(scan_period:10000, scan_delay:10000)
   var Vehicle_IsMoving =  VehicleIsMoving(Vehicle_IsMoving: true)
-  var SCAN_PERIOD: TimeInterval = 15.0
+  var SCAN_PERIOD: TimeInterval = 10.0
   var SCAN_DELAY: TimeInterval = 10.0
   var targetDevice: CBPeripheral?
   var isFB = true
@@ -46,6 +48,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   override init() {
     super.init()
     centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
+    requestLocalNotification()
   }
   
   func reloadLocalStorage(clearDetectedDevices:Bool = true)
@@ -103,7 +106,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       print("[DEBUG] - Start Scanning From Load")
       os_log("[DEBUG] - Start Scanning From Load", log: OSLog.default, type: .debug)
     case .poweredOff, .unauthorized, .unsupported, .unknown, .resetting:
-      print("Bluetooth is not available.")
+      print("[DEBUG] - Bluetooth is not available.")
+      os_log("[DEBUG] - Bluetooth is not available.", log: OSLog.default, type: .debug)
     @unknown default:
       print("A new state is available that is not handled.")
     }
@@ -111,12 +115,12 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   
   func startScanning() {
     let options: [String: Any] = [
-    CBCentralManagerScanOptionAllowDuplicatesKey: false,
-    CBConnectPeripheralOptionNotifyOnConnectionKey: true
+      CBCentralManagerScanOptionAllowDuplicatesKey: false,
+      CBConnectPeripheralOptionNotifyOnConnectionKey: true
     ]
     // let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x181D")] //weight sclae service
-    let serviceUUIDs = [CBUUID(string: "0x180A"), CBUUID(string: "0x181D"), CBUUID(string: "0xFFF0")]
-
+    let serviceUUIDs = [CBUUID(string: "0x180D")]
+    
     reloadLocalStorage()
     isScanning = true;
     if(Vehicle_IsMoving.Vehicle_IsMoving)
@@ -129,26 +133,26 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func startScanningInForeground() {
     
     DispatchQueue.main.asyncAfter(deadline: .now()) {
-      //      os_log("[DEBUG] - Start Scanning in Foreground", log: OSLog.default, type: .debug)
       if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFB)
       {
+        let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
         let options: [String: Any] = [
-        CBCentralManagerScanOptionAllowDuplicatesKey: false,
-        CBConnectPeripheralOptionNotifyOnConnectionKey: true
+          CBCentralManagerScanOptionAllowDuplicatesKey: true,
+          CBConnectPeripheralOptionNotifyOnConnectionKey: true
         ]
         print("[DEBUG] - Start Scanning in FG")
         self.reloadLocalStorage()
         self.isScanning = true;
-        self.centralManager.scanForPeripherals(withServices: nil, options: options)
+        self.centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
       }
       else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFB)
       {
         print("[DEBUG] - Start Scanning in BG plus")
-        let serviceUUIDs = [CBUUID(string: "0x180A"), CBUUID(string: "0x181D"), CBUUID(string: "0xFFF0")]
+        let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
         let options: [String: Any] = [
-        CBConnectPeripheralOptionNotifyOnConnectionKey: true,
-        CBCentralManagerScanOptionAllowDuplicatesKey: false,
-        CBCentralManagerScanOptionSolicitedServiceUUIDsKey: serviceUUIDs
+          CBCentralManagerScanOptionAllowDuplicatesKey: true,
+          CBConnectPeripheralOptionNotifyOnConnectionKey: true,
+          CBCentralManagerScanOptionSolicitedServiceUUIDsKey: serviceUUIDs
         ]
         self.reloadLocalStorage()
         self.isScanning = true;
@@ -193,22 +197,23 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func updateDeviceStatus()
   {
     
-//    for device in listOfSavedDevice {
-//      print("MAC: \(device.mac)")
-//    }
+    //    for device in listOfSavedDevice {
+    //      print("MAC: \(device.mac)")
+    //    }
     reloadLocalStorage(clearDetectedDevices: false)
+
     if(!listOfSavedDevice.isEmpty)
     {
       var newListOfSavedDevice = [BLEDevice]()
       listOfSavedDevice.forEach { device in
         if(detectedDevices.contains(device.mac))
         {
-          let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "on")
+          let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "on", isAutoConnect: device.isAutoConnect)
           newListOfSavedDevice.append(newDevice)
         }
         else
         {
-          let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "off")
+          let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "off", isAutoConnect: device.isAutoConnect)
           newListOfSavedDevice.append(newDevice)
         }
       }
@@ -216,9 +221,16 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
         let jsonData = try JSONEncoder().encode(newListOfSavedDevice)
         let jsonString = String(data: jsonData, encoding: .utf8)
         UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.MacBluetoothsConnected")
+        pushLocalNoti(msg: jsonString!)
+        connectDevice()
       } catch {
         print("Failed to encode devices: \(error.localizedDescription)")
       }
+    }
+    else
+    {
+      pushLocalNoti(msg: "Done a scan cycle without any device added")
+
     }
   }
   
@@ -230,12 +242,18 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     os_log("[DEBUG] DEVICE FOUND", log: OSLog.default, type: .debug)
     
     detectedDevices.insert(peripheral.identifier.uuidString)
-    
-//    if(peripheral.identifier.uuidString == "9ABD8859-2F6E-1324-D40A-02D652F5C43C")
-//    {
-//      targetDevice = peripheral
-//      connectDevice()
-//    }
+  }
+  
+  func checkIfTargetDeviceToConnect(peripheral: CBPeripheral)
+  {
+        for device in listOfSavedDevice {
+//          print("MAC: \(device.mac)")
+          if(device.isAutoConnect && device.mac == peripheral.identifier.uuidString)
+          {
+            targetDevice = peripheral
+            break
+          }
+        }
   }
   
   func connectDevice()
@@ -270,4 +288,36 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     }
   }
   
+  
+  func requestLocalNotification() {
+    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+      if granted {
+        print("Permission granted")
+      } else if let error = error {
+        print("Permission denied: \(error.localizedDescription)")
+      }
+    }
+
+  }
+  
+  func pushLocalNoti(msg: String)
+  {
+    let content = UNMutableNotificationContent()
+    content.title = "BLE Scanning"
+    content.body = msg
+    content.sound = UNNotificationSound.default
+    
+    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+    let id = "hnguyen48206"
+    let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+    let center = UNUserNotificationCenter.current()
+    center.removeDeliveredNotifications(withIdentifiers: [id])
+    center.removePendingNotificationRequests(withIdentifiers: [id])
+
+    center.add(request) { error in
+      if let error = error {
+        print("Error adding notification: \(error.localizedDescription)")
+      }
+    }
+  }
 }
