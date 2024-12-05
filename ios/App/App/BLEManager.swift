@@ -24,6 +24,7 @@ struct VehicleIsMoving: Codable {
 
 @available(iOS 14.0, *)
 class BLEManager: NSObject, CBCentralManagerDelegate {
+  var blSettingStatus: Bool = true
   var centralManager: CBCentralManager!
   var targetPeripheral: CBPeripheral?
   let logger: Logger = Logger(subsystem: "com.hnguyen48206.blesrv.ios", category: "background")
@@ -60,7 +61,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     MacBluetoothsConnectedStr = UserDefaults.standard.string(forKey: "CapacitorStorage.MacBluetoothsConnected") ?? ""
     BLEConfigsStr = UserDefaults.standard.string(forKey: "CapacitorStorage.BLEConfigs") ?? ""
     Vehicle_IsMovingStr = UserDefaults.standard.string(forKey: "CapacitorStorage.Vehicle_IsMoving") ?? ""
-    print("MacBluetoothsConnectedStr \(MacBluetoothsConnectedStr)")
+    print("MacBluetoothsConnectedStr \(String(describing: MacBluetoothsConnectedStr))")
     do {
       if(MacBluetoothsConnectedStr != "")
       {
@@ -105,9 +106,11 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       startScanningInForeground()
       print("[DEBUG] - Start Scanning From Load")
       os_log("[DEBUG] - Start Scanning From Load", log: OSLog.default, type: .debug)
+      blSettingStatus = true
     case .poweredOff, .unauthorized, .unsupported, .unknown, .resetting:
       print("[DEBUG] - Bluetooth is not available.")
       os_log("[DEBUG] - Bluetooth is not available.", log: OSLog.default, type: .debug)
+      blSettingStatus = false
     @unknown default:
       print("A new state is available that is not handled.")
     }
@@ -123,7 +126,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     
     reloadLocalStorage()
     isScanning = true;
-    if(Vehicle_IsMoving.Vehicle_IsMoving)
+    if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus)
     {
       centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
       os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
@@ -133,7 +136,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func startScanningInForeground() {
     
     DispatchQueue.main.asyncAfter(deadline: .now()) {
-      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFB)
+      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFB && self.blSettingStatus)
       {
         let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
         let options: [String: Any] = [
@@ -145,7 +148,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
       }
-      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFB)
+      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFB && self.blSettingStatus)
       {
         print("[DEBUG] - Start Scanning in BG plus")
         let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
@@ -160,7 +163,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       }
       else
       {
-        print("[DEBUG] - Not moving \(self.Vehicle_IsMoving.Vehicle_IsMoving))")
+        print("[DEBUG] - Not moving \(self.Vehicle_IsMoving.Vehicle_IsMoving)) - No BL \(self.blSettingStatus)")
       }
       self.timer.executeAfterDelay(delay: self.SCAN_PERIOD) {
         self.stopScanningInForeground(autorestart: true)
