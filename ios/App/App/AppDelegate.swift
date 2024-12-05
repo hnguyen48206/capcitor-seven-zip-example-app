@@ -59,7 +59,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
     self.bleManager.isFB = false
     self.bleManager.logger.log("[DEBUG] - BG MODE")
-    self.bleManager.stopScanningInForeground(autorestart: false)
+//    self.bleManager.stopScanningInForeground(autorestart: false)
     self.bleManager.scheduleBLEScan() // Schedule the next scan
   }
   

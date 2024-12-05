@@ -115,7 +115,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
 //    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
     ]
     // let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x181D")] //weight sclae service
-    let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180A")] //carmd m2 device info service
+    let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180A"), CBUUID(string: "0x181D")] //carmd m2 device info service
 
     reloadLocalStorage()
     isScanning = true;
@@ -127,22 +127,35 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   }
   
   func startScanningInForeground() {
-    let options: [String: Any] = [
-    CBCentralManagerScanOptionAllowDuplicatesKey: false,
-//    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
-    ]
+    
     DispatchQueue.main.asyncAfter(deadline: .now()) {
-      print("[DEBUG] - Start Scanning in FG")
       //      os_log("[DEBUG] - Start Scanning in Foreground", log: OSLog.default, type: .debug)
       if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFB)
       {
+        let options: [String: Any] = [
+        CBCentralManagerScanOptionAllowDuplicatesKey: false,
+    //    CBCentralManagerScanOptionSolicitedServiceUUIDsKey: [CBUUID(string: "180D")]
+        ]
+        print("[DEBUG] - Start Scanning in FG")
         self.reloadLocalStorage()
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: nil, options: options)
       }
+      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFB)
+      {
+        print("[DEBUG] - Start Scanning in BG plus")
+        let serviceUUIDs = [CBUUID(string: "0x180A"), CBUUID(string: "0x181D"), CBUUID(string: "0xFFF0")]
+        let options: [String: Any] = [
+        CBCentralManagerScanOptionAllowDuplicatesKey: false,
+        CBCentralManagerScanOptionSolicitedServiceUUIDsKey: serviceUUIDs
+        ]
+        self.reloadLocalStorage()
+        self.isScanning = true;
+        self.centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
+      }
       else
       {
-        print("[DEBUG] - Not moving or in BG \(self.Vehicle_IsMoving.Vehicle_IsMoving) \(self.isFB)")
+        print("[DEBUG] - Not moving \(self.Vehicle_IsMoving.Vehicle_IsMoving))")
       }
       self.timer.executeAfterDelay(delay: self.SCAN_PERIOD) {
         self.stopScanningInForeground(autorestart: true)
