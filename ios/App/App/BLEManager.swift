@@ -38,10 +38,10 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   var Vehicle_IsMovingStr: String?
   
   var listOfSavedDevice = [BLEDevice]()
-  var BLEConfigs = BLEConfig(scan_period:10000, scan_delay:10000)
+  var BLEConfigs = BLEConfig(scan_period:10000, scan_delay:15000)
   var Vehicle_IsMoving =  VehicleIsMoving(Vehicle_IsMoving: true)
   var SCAN_PERIOD: TimeInterval = 10.0
-  var SCAN_DELAY: TimeInterval = 10.0
+  var SCAN_DELAY: TimeInterval = 15.0
   var targetDevice: CBPeripheral?
   var isFG = true
   let listOfBLEServ: [CBUUID] = [CBUUID(string: "0x180D"), CBUUID(string: "0x5533")] //HeartRate
