@@ -30,6 +30,14 @@
 	<true/>
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Hello</string>
+	<key>NSBluetoothPeripheralUsageDescription</key>
+	<string>Hello</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Hello</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>Hello</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Hello</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>bluetooth-central</string>

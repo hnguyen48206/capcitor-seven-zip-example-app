@@ -3,6 +3,7 @@ import BackgroundTasks
 import UIKit
 import os.log
 import UserNotifications
+import CoreLocation
 
 struct BLEDevice: Codable {
   let mac: String
@@ -23,7 +24,8 @@ struct VehicleIsMoving: Codable {
 
 
 @available(iOS 14.0, *)
-class BLEManager: NSObject, CBCentralManagerDelegate {
+class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
+  private let locationManager = CLLocationManager()
   var blSettingStatus: Bool = true
   var centralManager: CBCentralManager!
   var targetPeripheral: CBPeripheral?
@@ -51,6 +53,23 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     super.init()
     centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
     requestLocalNotification()
+    setupLocationManager()
+  }
+  
+  func setupLocationManager()
+  {
+    // Setup Location Manager
+    locationManager.delegate = self
+    locationManager.requestAlwaysAuthorization()
+    locationManager.allowsBackgroundLocationUpdates = true
+    locationManager.startUpdatingLocation()
+  }
+  func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
+  { guard let location = locations.last
+    else { return }
+    print("Updated Location: \(location)")
+  }
+  func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) { print("Failed to get location: \(error)")
   }
   
   func reloadLocalStorage(clearDetectedDevices:Bool = true)
