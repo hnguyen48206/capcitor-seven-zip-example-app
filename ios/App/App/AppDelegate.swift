@@ -9,43 +9,41 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   var window: UIWindow?
   var bleManager: BLEManager!
   private lazy var timer = BackgroundTimer(delegate: nil)
-
+  
   func application(
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
     bleManager = BLEManager()
-
+    
     BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv.ios", using: nil) { task in
-//      BGProcessingTask
-//      BGAppRefreshTask
+      //      BGProcessingTask
+      //      BGAppRefreshTask
       self.handleBLEScan(task: task as! BGProcessingTask)
     }
     
     return true
   }
   func handleBLEScan(task: BGProcessingTask) {
-      bleManager.scheduleBLEScan() // Schedule the next scan
-      print("[DEBUG] - Start Scanning in BG")
-      os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
-      bleManager.startScanning()
-   
-      //In BG, scan only for 10s each
-      self.timer.executeAfterDelay(delay: 10) {
-        print("[DEBUG] - Should STOP NOW - By Task")
-        self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
-        self.bleManager.stopScanning()
-        task.setTaskCompleted(success: false)
-      }
- 
+    bleManager.scheduleBLEScan() // Schedule the next scan
+    print("[DEBUG] - Start Scanning in BG")
+    os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
+    bleManager.startScanning()
+    
+    //In BG, scan only for 10s each
+    self.timer.executeAfterDelay(delay: 10) {
+      print("[DEBUG] - Should STOP NOW - By Task")
+      self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
+      self.bleManager.stopScanning()
+      task.setTaskCompleted(success: true)
+    }
+    
     task.expirationHandler = {
       print("[DEBUG] - Should STOP NOW - By Expiration")
       self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
       self.bleManager.stopScanning()
       task.setTaskCompleted(success: false)
     }
-    
-
   }
   
   
@@ -57,15 +55,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   func applicationDidEnterBackground(_ application: UIApplication) {
     // Use this method to release shared resources, save user data, invalidate timers, and store enough application state information to restore your application to its current state in case it is terminated later.
     // If your application supports background execution, this method is called instead of applicationWillTerminate: when the user quits.
-    self.bleManager.isFB = false
+    self.bleManager.isFG = false
     self.bleManager.logger.log("[DEBUG] - BG MODE")
-//    self.bleManager.stopScanningInForeground(autorestart: false)
+    //    self.bleManager.stopScanningInForeground(autorestart: false)
     self.bleManager.scheduleBLEScan() // Schedule the next scan
   }
   
   func applicationWillEnterForeground(_ application: UIApplication) {
     // Called as part of the transition from the background to the active state; here you can undo many of the changes made on entering the background.
-    self.bleManager.isFB = true
+    self.bleManager.isFG = true
   }
   
   func applicationDidBecomeActive(_ application: UIApplication) {

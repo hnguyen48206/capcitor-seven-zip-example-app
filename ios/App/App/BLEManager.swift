@@ -41,7 +41,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   var SCAN_PERIOD: TimeInterval = 10.0
   var SCAN_DELAY: TimeInterval = 10.0
   var targetDevice: CBPeripheral?
-  var isFB = true
+  var isFG = true
   private var detectedDevices: Set<String> = []
   
   private var isScanning = false
@@ -69,7 +69,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
           print("Unable to convert MacBluetoothsConnectedStr to data")
           return
         }
-        print("MacBluetoothsConnectedData \(MacBluetoothsConnectedData)")
+//        print("MacBluetoothsConnectedData \(MacBluetoothsConnectedData)")
         listOfSavedDevice = try JSONDecoder().decode([BLEDevice].self, from: MacBluetoothsConnectedData)
         print("listOfSavedDevice \(listOfSavedDevice.description)")
       }
@@ -77,7 +77,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       if(BLEConfigsStr != "")
       {
         guard let BLEConfigsData = BLEConfigsStr?.data(using: .utf8) else {
-          print("Unable to convert BLEConfigsStr to data")
+          print("[DEBUG] - Unable to convert BLEConfigsStr to data")
           return
         }
         BLEConfigs = try JSONDecoder().decode(BLEConfig.self, from: BLEConfigsData)
@@ -86,14 +86,14 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       if(Vehicle_IsMovingStr != "")
       {
         guard let Vehicle_IsMovingData = Vehicle_IsMovingStr?.data(using: .utf8) else {
-          print("Unable to convert Vehicle_IsMovingStr to data")
+          print("[DEBUG] - Unable to convert Vehicle_IsMovingStr to data")
           return
         }
         Vehicle_IsMoving = try JSONDecoder().decode(VehicleIsMoving.self, from: Vehicle_IsMovingData)
       }
       
     } catch {
-      print("Failed to decode JSON: \(error.localizedDescription)")
+      print("[DEBUG] - Failed to decode JSON: \(error.localizedDescription)")
     }
     
     SCAN_PERIOD = TimeInterval(round(Double(BLEConfigs.scan_period)/1000))
@@ -112,7 +112,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       os_log("[DEBUG] - Bluetooth is not available.", log: OSLog.default, type: .debug)
       blSettingStatus = false
     @unknown default:
-      print("A new state is available that is not handled.")
+      print("[DEBUG] - A new state is available that is not handled.")
     }
   }
   
@@ -136,7 +136,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func startScanningInForeground() {
     
     DispatchQueue.main.asyncAfter(deadline: .now()) {
-      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFB && self.blSettingStatus)
+      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFG && self.blSettingStatus)
       {
         let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
         let options: [String: Any] = [
@@ -148,7 +148,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
       }
-      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFB && self.blSettingStatus)
+      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFG && self.blSettingStatus)
       {
         print("[DEBUG] - Start Scanning in BG plus")
         let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
@@ -186,7 +186,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       centralManager.stopScan()
       updateDeviceStatus()
     }
-    print("Stop Scanning in FG \(autorestart)")
+    print("[DEBUG] - Stop Scanning in FG or BG plus \(autorestart)")
     //    os_log("[DEBUG] - Stop Scanning in Foreground", log: OSLog.default, type: .debug)
     if(autorestart)
     {
@@ -195,7 +195,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       }
     }
   }
-  
   
   func updateDeviceStatus()
   {
@@ -227,7 +226,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
         pushLocalNoti(msg: jsonString!)
         connectDevice()
       } catch {
-        print("Failed to encode devices: \(error.localizedDescription)")
+        print("[DEBUG] - Failed to encode devices: \(error.localizedDescription)")
       }
     }
     else
@@ -245,6 +244,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     os_log("[DEBUG] DEVICE FOUND", log: OSLog.default, type: .debug)
     
     detectedDevices.insert(peripheral.identifier.uuidString)
+    checkIfTargetDeviceToConnect(peripheral: peripheral)
   }
   
   func checkIfTargetDeviceToConnect(peripheral: CBPeripheral)
@@ -268,13 +268,12 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   }
   
   func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
-    print("Connected to \(peripheral.name ?? "Unknown")")
+    print("[DEBUG] - Connected to \(peripheral.name ?? "Unknown")")
   }
   
   func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
-    print("Failed to connect to \(peripheral.name ?? "Unknown"): \(error?.localizedDescription ?? "No error information")")
+    print("[DEBUG] - Failed to connect to \(peripheral.name ?? "Unknown"): \(error?.localizedDescription ?? "No error information")")
   }
-  
   
   func scheduleBLEScan() {
     //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
@@ -286,18 +285,17 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       try BGTaskScheduler.shared.submit(request)
       logger.log("[DEBUG] - Registered next schedule.")
     } catch {
-      print("Could not schedule BLE scan: \(error)")
+      print("[DEBUG] - Could not schedule BLE scan: \(error)")
       logger.log("[DEBUG] - Could not schedule BLE scan: \(error)")
     }
   }
   
-  
   func requestLocalNotification() {
     UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
       if granted {
-        print("Permission granted")
+        print("[DEBUG] - Permission granted")
       } else if let error = error {
-        print("Permission denied: \(error.localizedDescription)")
+        print("[DEBUG] - Permission denied: \(error.localizedDescription)")
       }
     }
 
@@ -319,7 +317,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
 
     center.add(request) { error in
       if let error = error {
-        print("Error adding notification: \(error.localizedDescription)")
+        print("[DEBUG] - Error adding notification: \(error.localizedDescription)")
       }
     }
   }
