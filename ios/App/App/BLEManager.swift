@@ -70,7 +70,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
           print("Unable to convert MacBluetoothsConnectedStr to data")
           return
         }
-//        print("MacBluetoothsConnectedData \(MacBluetoothsConnectedData)")
+        //        print("MacBluetoothsConnectedData \(MacBluetoothsConnectedData)")
         listOfSavedDevice = try JSONDecoder().decode([BLEDevice].self, from: MacBluetoothsConnectedData)
         print("listOfSavedDevice \(listOfSavedDevice.description)")
       }
@@ -196,22 +196,26 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func updateDeviceStatus()
   {
     
-    //    for device in listOfSavedDevice {
-    //      print("MAC: \(device.mac)")
-    //    }
+    //        for device in detectedDevices {
+    //          print("DETECTED MAC: \(device)")
+    //        }
     reloadLocalStorage(clearDetectedDevices: false)
-
+    
     if(!listOfSavedDevice.isEmpty)
     {
       var newListOfSavedDevice = [BLEDevice]()
       listOfSavedDevice.forEach { device in
-        if(detectedDevices.contains(device.mac))
+        //        print("SAVED MAC: \(device.mac)")
+        
+        if(detectedDevices.contains(device.mac) || (targetDevice?.state.rawValue == 2 && targetDevice?.identifier.uuidString == device.mac))
         {
+          //          print("ON")
           let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "on", isAutoConnect: device.isAutoConnect)
           newListOfSavedDevice.append(newDevice)
         }
         else
         {
+          //          print("OFF")
           let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "off", isAutoConnect: device.isAutoConnect)
           newListOfSavedDevice.append(newDevice)
         }
@@ -243,16 +247,17 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     checkIfTargetDeviceToConnect(peripheral: peripheral)
   }
   
+  
   func checkIfTargetDeviceToConnect(peripheral: CBPeripheral)
   {
-        for device in listOfSavedDevice {
-//          print("MAC: \(device.mac)")
-          if(device.isAutoConnect && device.mac == peripheral.identifier.uuidString)
-          {
-            targetDevice = peripheral
-            break
-          }
-        }
+    for device in listOfSavedDevice {
+      //          print("MAC: \(device.mac)")
+      if(device.isAutoConnect && device.mac == peripheral.identifier.uuidString)
+      {
+        targetDevice = peripheral
+        break
+      }
+    }
   }
   
   func connectDevice()
@@ -270,6 +275,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
     print("[DEBUG] - Failed to connect to \(peripheral.name ?? "Unknown"): \(error?.localizedDescription ?? "No error information")")
   }
+  
   
   func scheduleBLEScan() {
     //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
@@ -309,11 +315,16 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     let center = UNUserNotificationCenter.current()
     center.removeDeliveredNotifications(withIdentifiers: [id])
     center.removePendingNotificationRequests(withIdentifiers: [id])
-
+    
     center.add(request) { error in
       if let error = error {
         print("[DEBUG] - Error adding notification: \(error.localizedDescription)")
       }
     }
+  }
+  
+  func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+    if let error = error { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") with error: \(error.localizedDescription)") }
+    else { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") successfully") }
   }
 }
