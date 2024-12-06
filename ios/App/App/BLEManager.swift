@@ -42,6 +42,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   var SCAN_DELAY: TimeInterval = 10.0
   var targetDevice: CBPeripheral?
   var isFG = true
+  let listOfBLEServ: [CBUUID] = [CBUUID(string: "0x180D"), CBUUID(string: "0x5533")] //HeartRate
   private var detectedDevices: Set<String> = []
   
   private var isScanning = false
@@ -121,14 +122,12 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
       CBCentralManagerScanOptionAllowDuplicatesKey: false,
       CBConnectPeripheralOptionNotifyOnConnectionKey: true
     ]
-    // let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x181D")] //weight sclae service
-    let serviceUUIDs = [CBUUID(string: "0x180D")]
     
     reloadLocalStorage()
     isScanning = true;
     if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus)
     {
-      centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
+      centralManager.scanForPeripherals(withServices: listOfBLEServ, options: options)
       os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
     }
   }
@@ -138,7 +137,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     DispatchQueue.main.asyncAfter(deadline: .now()) {
       if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFG && self.blSettingStatus)
       {
-        let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
         let options: [String: Any] = [
           CBCentralManagerScanOptionAllowDuplicatesKey: true,
           CBConnectPeripheralOptionNotifyOnConnectionKey: true
@@ -146,20 +144,19 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
         print("[DEBUG] - Start Scanning in FG")
         self.reloadLocalStorage()
         self.isScanning = true;
-        self.centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
+        self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
       }
       else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFG && self.blSettingStatus)
       {
         print("[DEBUG] - Start Scanning in BG plus")
-        let serviceUUIDs: [CBUUID] = [CBUUID(string: "0x180D")]
         let options: [String: Any] = [
           CBCentralManagerScanOptionAllowDuplicatesKey: true,
           CBConnectPeripheralOptionNotifyOnConnectionKey: true,
-          CBCentralManagerScanOptionSolicitedServiceUUIDsKey: serviceUUIDs
+          CBCentralManagerScanOptionSolicitedServiceUUIDsKey: self.listOfBLEServ
         ]
         self.reloadLocalStorage()
         self.isScanning = true;
-        self.centralManager.scanForPeripherals(withServices: serviceUUIDs, options: options)
+        self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
       }
       else
       {
@@ -190,7 +187,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     //    os_log("[DEBUG] - Stop Scanning in Foreground", log: OSLog.default, type: .debug)
     if(autorestart)
     {
-      let taskID = timer.executeAfterDelay(delay: SCAN_DELAY) {
+      timer.executeAfterDelay(delay: SCAN_DELAY) {
         self.startScanningInForeground()
       }
     }
@@ -232,7 +229,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     else
     {
       pushLocalNoti(msg: "Done a scan cycle without any device added")
-
     }
   }
   
@@ -298,7 +294,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
         print("[DEBUG] - Permission denied: \(error.localizedDescription)")
       }
     }
-
   }
   
   func pushLocalNoti(msg: String)

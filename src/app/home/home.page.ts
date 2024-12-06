@@ -36,11 +36,14 @@ export class HomePage {
     if (this.isValidMACAddress(this.addDeviceID)) {
       //add
       this.arr.push({
-        mac: this.addDeviceID,
+        mac:
+          this.addDeviceID == ''
+            ? 'AD54DCDC-3077-A0DE-70EC-888DE895C7EC'
+            : this.addDeviceID,
         vehicleID: 'ABC',
         status: 'on',
         deviceName: 'test',
-        isAutoConnect: false
+        isAutoConnect: true,
       });
       await Preferences.set({
         key: 'MacBluetoothsConnected',
@@ -66,6 +69,7 @@ export class HomePage {
   }
   isValidMACAddress(mac: string) {
     const macRegex = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
-    return macRegex.test(mac);
+    // return macRegex.test(mac);
+    return true;
   }
 }
