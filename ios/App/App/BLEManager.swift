@@ -285,6 +285,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   
   func scheduleBLEScan() {
     //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
+    countPendingTask()
     let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
     request.requiresNetworkConnectivity = false
     request.requiresExternalPower = false
@@ -333,4 +334,12 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     if let error = error { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") with error: \(error.localizedDescription)") }
     else { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") successfully") }
   }
+  
+  func countPendingTask()
+  {
+    BGTaskScheduler.shared.getPendingTaskRequests { (taskRequests) in
+      let pendingTaskCount = taskRequests.count
+      print("Number of pending task requests: \(pendingTaskCount)") }
+  }
+  
 }
