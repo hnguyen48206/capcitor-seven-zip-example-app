@@ -118,17 +118,25 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   }
   
   func startScanning() {
-    let options: [String: Any] = [
-      CBCentralManagerScanOptionAllowDuplicatesKey: false,
-      CBConnectPeripheralOptionNotifyOnConnectionKey: true
-    ]
-    
-    reloadLocalStorage()
-    isScanning = true;
-    if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus)
+    if(!isScanning)
     {
-      centralManager.scanForPeripherals(withServices: listOfBLEServ, options: options)
-      os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
+      isScanning = true;
+
+      let options: [String: Any] = [
+        CBCentralManagerScanOptionAllowDuplicatesKey: false,
+        CBConnectPeripheralOptionNotifyOnConnectionKey: true
+      ]
+      
+      reloadLocalStorage()
+      if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus)
+      {
+        centralManager.scanForPeripherals(withServices: listOfBLEServ, options: options)
+        os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
+      }
+    }
+    else
+    {
+      os_log("[DEBUG] - No Scanning in BG cause the FG scan is happening", log: OSLog.default, type: .debug)
     }
   }
   
@@ -195,7 +203,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
   
   func updateDeviceStatus()
   {
-    
     //        for device in detectedDevices {
     //          print("DETECTED MAC: \(device)")
     //        }
@@ -247,7 +254,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     checkIfTargetDeviceToConnect(peripheral: peripheral)
   }
   
-  
   func checkIfTargetDeviceToConnect(peripheral: CBPeripheral)
   {
     for device in listOfSavedDevice {
@@ -282,7 +288,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate {
     let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
     request.requiresNetworkConnectivity = false
     request.requiresExternalPower = false
-    request.earliestBeginDate = Date(timeIntervalSinceNow: SCAN_DELAY)
+    request.earliestBeginDate = Date(timeIntervalSinceNow: 60.0)
     do {
       try BGTaskScheduler.shared.submit(request)
       logger.log("[DEBUG] - Registered next schedule.")

@@ -25,7 +25,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     return true
   }
   func handleBLEScan(task: BGProcessingTask) {
-    bleManager.scheduleBLEScan() // Schedule the next scan
     print("[DEBUG] - Start Scanning in BG")
     os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
     bleManager.startScanning()
@@ -35,6 +34,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       print("[DEBUG] - Should STOP NOW - By Task")
       self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
       self.bleManager.stopScanning()
+      self.bleManager.scheduleBLEScan()
       task.setTaskCompleted(success: true)
     }
     
@@ -42,6 +42,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       print("[DEBUG] - Should STOP NOW - By Expiration")
       self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
       self.bleManager.stopScanning()
+      self.bleManager.scheduleBLEScan()
       task.setTaskCompleted(success: false)
     }
   }
