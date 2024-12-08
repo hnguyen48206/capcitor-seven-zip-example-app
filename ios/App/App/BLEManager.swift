@@ -287,9 +287,13 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   func connectDevice()
   {
-    if(targetDevice != nil)
+    if(targetDevice != nil && targetDevice?.state.rawValue != 2)
     {
       centralManager.connect(targetDevice!, options: nil)
+    }
+    else
+    {
+      os_log("[DEBUG] TARGET DEVICE is alreay in connection", log: OSLog.default, type: .debug)
     }
   }
   

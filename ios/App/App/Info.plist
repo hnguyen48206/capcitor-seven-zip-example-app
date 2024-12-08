@@ -44,6 +44,7 @@
 		<string>processing</string>
 		<string>bluetooth-peripheral</string>
 		<string>location</string>
+		<string>fetch</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
