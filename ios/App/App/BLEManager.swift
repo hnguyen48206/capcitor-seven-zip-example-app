@@ -16,6 +16,7 @@ struct BLEDevice: Codable {
 struct BLEConfig: Codable {
   let scan_period: Int
   let scan_delay: Int
+  let isTesting: Bool
 }
 
 struct VehicleIsMoving: Codable {
@@ -38,13 +39,16 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   var Vehicle_IsMovingStr: String?
   
   var listOfSavedDevice = [BLEDevice]()
-  var BLEConfigs = BLEConfig(scan_period:10000, scan_delay:15000)
+  var BLEConfigs = BLEConfig(scan_period:10000, scan_delay:15000, isTesting: true)
   var Vehicle_IsMoving =  VehicleIsMoving(Vehicle_IsMoving: true)
   var SCAN_PERIOD: TimeInterval = 10.0
   var SCAN_DELAY: TimeInterval = 15.0
   var targetDevice: CBPeripheral?
   var isFG = true
   let listOfBLEServ: [CBUUID] = [CBUUID(string: "0x180D"), CBUUID(string: "0x5533")] //HeartRate
+  var listOfLatestSans = [String]()
+  let df = DateFormatter()
+
   private var detectedDevices: Set<String> = []
   
   private var isScanning = false
@@ -54,6 +58,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
     requestLocalNotification()
     setupLocationManager()
+    df.dateFormat = "yyyy-MM-dd HH:mm:ss"
+    scanHistoryLog(isGet: true)
   }
   
   func setupLocationManager()
@@ -62,6 +68,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     locationManager.delegate = self
     locationManager.requestAlwaysAuthorization()
     locationManager.allowsBackgroundLocationUpdates = true
+    locationManager.pausesLocationUpdatesAutomatically = false
+    locationManager.showsBackgroundLocationIndicator = true
     locationManager.startUpdatingLocation()
   }
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
@@ -70,6 +78,26 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     print("Updated Location: \(location)")
   }
   func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) { print("Failed to get location: \(error)")
+  }
+  
+  func scanHistoryLog(isGet:Bool)
+  {
+    if(isGet)
+    {
+      var stringArray = UserDefaults.standard.string(forKey: "CapacitorStorage.scanHistoryLog") ?? ""
+      if(!stringArray.isEmpty)
+      {
+        listOfLatestSans = stringArray.components(separatedBy: "devider")
+      }
+    }
+    else
+    {
+      if(!listOfLatestSans.isEmpty)
+      {
+        let singleString = listOfLatestSans.joined(separator: "devider")
+        UserDefaults.standard.set(singleString, forKey: "CapacitorStorage.scanHistoryLog")
+      }
+    }
   }
   
   func reloadLocalStorage(clearDetectedDevices:Bool = true)
@@ -89,7 +117,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
           print("Unable to convert MacBluetoothsConnectedStr to data")
           return
         }
-        //        print("MacBluetoothsConnectedData \(MacBluetoothsConnectedData)")
+        //print("MacBluetoothsConnectedData \(MacBluetoothsConnectedData)")
         listOfSavedDevice = try JSONDecoder().decode([BLEDevice].self, from: MacBluetoothsConnectedData)
         print("listOfSavedDevice \(listOfSavedDevice.description)")
       }
@@ -136,6 +164,16 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     }
   }
   
+  func addScanLogHistory()
+  {
+    if(listOfLatestSans.count > 10)
+    {
+      listOfLatestSans.removeFirst()
+    }
+    listOfLatestSans.append(df.string(from: Date()))
+    scanHistoryLog(isGet: false)
+  }
+  
   func startScanning() {
     if(!isScanning)
     {
@@ -150,6 +188,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
       if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus)
       {
         centralManager.scanForPeripherals(withServices: listOfBLEServ, options: options)
+        self.addScanLogHistory()
         os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
       }
     }
@@ -172,6 +211,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         self.reloadLocalStorage()
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
+        self.addScanLogHistory()
       }
       else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFG && self.blSettingStatus)
       {
@@ -184,6 +224,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         self.reloadLocalStorage()
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
+        self.addScanLogHistory()
       }
       else
       {
@@ -334,22 +375,29 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   func pushLocalNoti(msg: String)
   {
-    let content = UNMutableNotificationContent()
-    content.title = "BLE Scanning"
-    content.body = msg
-    content.sound = UNNotificationSound.default
-    
-    let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-    let id = "hnguyen48206"
-    let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-    let center = UNUserNotificationCenter.current()
-    center.removeDeliveredNotifications(withIdentifiers: [id])
-    center.removePendingNotificationRequests(withIdentifiers: [id])
-    
-    center.add(request) { error in
-      if let error = error {
-        print("[DEBUG] - Error adding notification: \(error.localizedDescription)")
+    if(BLEConfigs.isTesting)
+    {
+      let content = UNMutableNotificationContent()
+      content.title = "BLE Scanning"
+      content.body = msg
+      content.sound = UNNotificationSound.default
+      
+      let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+      let id = "hnguyen48206"
+      let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+      let center = UNUserNotificationCenter.current()
+      center.removeDeliveredNotifications(withIdentifiers: [id])
+      center.removePendingNotificationRequests(withIdentifiers: [id])
+      
+      center.add(request) { error in
+        if let error = error {
+          print("[DEBUG] - Error adding notification: \(error.localizedDescription)")
+        }
       }
+    }
+    else
+    {
+      print("[DEBUG] - No testing mode")
     }
   }
   

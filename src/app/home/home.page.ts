@@ -12,6 +12,7 @@ export class HomePage {
   currentList: string | null = '';
   arr: any[] = [];
   updateInterval: any;
+  pastScanLogs: any[] = [];
   ionViewWillEnter() {
     this.getCurrentList();
   }
@@ -71,5 +72,12 @@ export class HomePage {
     const macRegex = /^([0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2}$/;
     // return macRegex.test(mac);
     return true;
+  }
+
+  async getScanHistory()
+  {
+    let res = await Preferences.get({ key: 'scanHistoryLog' });
+    if(res)
+      this.pastScanLogs = (res.value as String).split("devider");
   }
 }

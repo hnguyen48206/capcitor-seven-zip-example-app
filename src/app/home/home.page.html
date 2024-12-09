@@ -56,5 +56,16 @@
         <ion-button (click)="rmDevice()">rmDevice</ion-button>
       </ion-col>
     </ion-row>
+
+    <ion-row>
+      <ion-col>
+        <ion-button (click)="getScanHistory()">Get Scan History</ion-button>
+      </ion-col>
+      <ng-container *ngFor="let scan of pastScanLogs">
+        <ion-item>
+          {{scan}}
+          </ion-item>
+        </ng-container>
+    </ion-row>
   </ion-grid>
 </ion-content>
