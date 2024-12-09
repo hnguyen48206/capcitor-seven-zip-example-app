@@ -381,7 +381,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
       let content = UNMutableNotificationContent()
       content.title = "BLE Scanning"
       content.body = msg
-      content.sound = UNNotificationSound.default
+      content.sound = nil
+      content.categoryIdentifier = "silentCategory"
       
       let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
       let id = "hnguyen48206"
