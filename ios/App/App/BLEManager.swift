@@ -71,6 +71,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     locationManager.pausesLocationUpdatesAutomatically = false
     locationManager.showsBackgroundLocationIndicator = true
     locationManager.startUpdatingLocation()
+    locationManager.startMonitoringSignificantLocationChanges()
   }
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
   { guard let location = locations.last
