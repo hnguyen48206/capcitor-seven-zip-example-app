@@ -172,13 +172,15 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     }
   }
   
-  func addScanLogHistory()
+  func addScanLogHistory(deviceList: String)
   {
-    if(listOfLatestSans.count > 20)
+    if(listOfLatestSans.count > 50)
     {
       listOfLatestSans.removeFirst()
     }
-    listOfLatestSans.append(df.string(from: Date()))
+    let newItem = df.string(from: Date()) + "_" + deviceList
+    print(newItem)
+    listOfLatestSans.append(newItem)
     scanHistoryLog(isGet: false)
   }
   
@@ -196,7 +198,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
       if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus && !isTargetDeviceConnected())
       {
         centralManager.scanForPeripherals(withServices: listOfBLEServ, options: options)
-        self.addScanLogHistory()
         os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
       }
     }
@@ -219,7 +220,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         self.reloadLocalStorage()
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
-        self.addScanLogHistory()
       }
       else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFG && self.blSettingStatus && !self.isTargetDeviceConnected())
       {
@@ -232,7 +232,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         self.reloadLocalStorage()
         self.isScanning = true;
         self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
-        self.addScanLogHistory()
       }
       else
       {
@@ -313,6 +312,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         let jsonString = String(data: jsonData, encoding: .utf8)
         UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.MacBluetoothsConnected")
         pushLocalNoti(msg: jsonString!)
+        addScanLogHistory(deviceList: jsonString!)
         timer.executeAfterDelay(delay: self.CONNECT_DELAY) {
           print("[DEBUG] - DELAY BEFORE CONNECTION \(self.CONNECT_DELAY)")
           self.connectDevice()
