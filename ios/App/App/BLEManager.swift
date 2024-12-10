@@ -17,11 +17,17 @@ struct BLEConfig: Codable {
   let scan_period: Int
   let scan_delay: Int
   let isTesting: Bool
+  let connect_delay: Int
 }
 
 struct VehicleIsMoving: Codable {
   let Vehicle_IsMoving: Bool
 }
+enum BluetoothCommand: String, CaseIterable {
+  case numQueue = "NUM_QUEUE\r"
+  case readAll = "READ_ALL\r"
+}
+
 
 
 @available(iOS 14.0, *)
@@ -39,16 +45,17 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   var Vehicle_IsMovingStr: String?
   
   var listOfSavedDevice = [BLEDevice]()
-  var BLEConfigs = BLEConfig(scan_period:10000, scan_delay:15000, isTesting: true)
+  var BLEConfigs = BLEConfig(scan_period:10000, scan_delay:50000, isTesting: true, connect_delay:900000)
   var Vehicle_IsMoving =  VehicleIsMoving(Vehicle_IsMoving: true)
   var SCAN_PERIOD: TimeInterval = 10.0
-  var SCAN_DELAY: TimeInterval = 15.0
+  var SCAN_DELAY: TimeInterval = 50.0
+  var CONNECT_DELAY: TimeInterval = 900
   var targetDevice: CBPeripheral?
   var isFG = true
   let listOfBLEServ: [CBUUID] = [CBUUID(string: "0x180D"), CBUUID(string: "0x5533")] //HeartRate
   var listOfLatestSans = [String]()
   let df = DateFormatter()
-
+  
   private var detectedDevices: Set<String> = []
   
   private var isScanning = false
@@ -167,7 +174,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   func addScanLogHistory()
   {
-    if(listOfLatestSans.count > 10)
+    if(listOfLatestSans.count > 20)
     {
       listOfLatestSans.removeFirst()
     }
@@ -179,7 +186,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     if(!isScanning)
     {
       isScanning = true;
-
+      
       let options: [String: Any] = [
         CBCentralManagerScanOptionAllowDuplicatesKey: false,
         CBConnectPeripheralOptionNotifyOnConnectionKey: true
@@ -306,7 +313,10 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         let jsonString = String(data: jsonData, encoding: .utf8)
         UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.MacBluetoothsConnected")
         pushLocalNoti(msg: jsonString!)
-        connectDevice()
+        timer.executeAfterDelay(delay: self.CONNECT_DELAY) {
+          print("[DEBUG] - DELAY BEFORE CONNECTION \(self.CONNECT_DELAY)")
+          self.connectDevice()
+        }
       } catch {
         print("[DEBUG] - Failed to encode devices: \(error.localizedDescription)")
       }
@@ -354,78 +364,110 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   func centralManager(_ central: CBCentralManager, didConnect peripheral: CBPeripheral) {
     print("[DEBUG] - Connected to \(peripheral.name ?? "Unknown")")
+    peripheral.discoverServices(nil)
   }
   
   func centralManager(_ central: CBCentralManager, didFailToConnect peripheral: CBPeripheral, error: Error?) {
     print("[DEBUG] - Failed to connect to \(peripheral.name ?? "Unknown"): \(error?.localizedDescription ?? "No error information")")
   }
   
-  
-  func scheduleBLEScan() {
-    //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
-    countPendingTask()
-    let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
-    request.requiresNetworkConnectivity = false
-    request.requiresExternalPower = false
-    request.earliestBeginDate = Date(timeIntervalSinceNow: 60.0)
-    do {
-      try BGTaskScheduler.shared.submit(request)
-      logger.log("[DEBUG] - Registered next schedule.")
-    } catch {
-      print("[DEBUG] - Could not schedule BLE scan: \(error)")
-      logger.log("[DEBUG] - Could not schedule BLE scan: \(error)")
-    }
-  }
-  
-  func requestLocalNotification() {
-    UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-      if granted {
-        print("[DEBUG] - Permission granted")
-      } else if let error = error {
-        print("[DEBUG] - Permission denied: \(error.localizedDescription)")
+  func peripheral(_ peripheral: CBPeripheral, didDiscoverServices error: Error?) {
+    if let services = peripheral.services {
+      for service in services {
+        peripheral.discoverCharacteristics(nil, for: service)
       }
     }
   }
   
-  func pushLocalNoti(msg: String)
-  {
-    if(BLEConfigs.isTesting)
-    {
-      let content = UNMutableNotificationContent()
-      content.title = "BLE Scanning"
-      content.body = msg
-      content.sound = nil
-      content.categoryIdentifier = "silentCategory"
-      
-      let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-      let id = "hnguyen48206"
-      let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
-      let center = UNUserNotificationCenter.current()
-      center.removeDeliveredNotifications(withIdentifiers: [id])
-      center.removePendingNotificationRequests(withIdentifiers: [id])
-      
-      center.add(request) { error in
-        if let error = error {
-          print("[DEBUG] - Error adding notification: \(error.localizedDescription)")
+  func peripheral(_ peripheral: CBPeripheral, didDiscoverCharacteristicsFor service: CBService, error: Error?) {
+    if let characteristics = service.characteristics {
+      for characteristic in characteristics {
+        // Write value to characteristic
+        if characteristic.properties.contains(.write) {
+          let valueToWrite = "Your command".data(using: .utf8)!
+          peripheral.writeValue(valueToWrite, for: characteristic, type: .withResponse)
         }
       }
     }
-    else
-    {
-      print("[DEBUG] - No testing mode")
+  }
+    func scheduleBLEScan() {
+      //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
+      countPendingTask()
+      let request = BGProcessingTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
+      request.requiresNetworkConnectivity = false
+      request.requiresExternalPower = false
+      request.earliestBeginDate = Date(timeIntervalSinceNow: 60.0)
+      do {
+        try BGTaskScheduler.shared.submit(request)
+        logger.log("[DEBUG] - Registered next schedule.")
+      } catch {
+        print("[DEBUG] - Could not schedule BLE scan: \(error)")
+        logger.log("[DEBUG] - Could not schedule BLE scan: \(error)")
+      }
     }
+    
+    func requestLocalNotification() {
+      UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+        if granted {
+          print("[DEBUG] - Permission granted")
+        } else if let error = error {
+          print("[DEBUG] - Permission denied: \(error.localizedDescription)")
+        }
+      }
+    }
+    
+    func pushLocalNoti(msg: String)
+    {
+      if(BLEConfigs.isTesting)
+      {
+        let content = UNMutableNotificationContent()
+        content.title = "BLE Scanning"
+        content.body = msg
+        content.sound = nil
+        content.categoryIdentifier = "silentCategory"
+        
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let id = "hnguyen48206"
+        let request = UNNotificationRequest(identifier: id, content: content, trigger: trigger)
+        let center = UNUserNotificationCenter.current()
+        center.removeDeliveredNotifications(withIdentifiers: [id])
+        center.removePendingNotificationRequests(withIdentifiers: [id])
+        
+        center.add(request) { error in
+          if let error = error {
+            print("[DEBUG] - Error adding notification: \(error.localizedDescription)")
+          }
+        }
+      }
+      else
+      {
+        print("[DEBUG] - No testing mode")
+      }
+    }
+    
+    func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
+      if let error = error { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") with error: \(error.localizedDescription)") }
+      else { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") successfully") }
+    }
+    
+    func countPendingTask()
+    {
+      BGTaskScheduler.shared.getPendingTaskRequests { (taskRequests) in
+        let pendingTaskCount = taskRequests.count
+        print("Number of pending task requests: \(pendingTaskCount)") }
+    }
+    
+    //  func writeValue() {
+    //
+    //    if (isTargetDeviceConnected()) { //check if myPeripheral is connected to send data
+    //          BluetoothCommand.allCases.forEach {
+    //              let dataToSend: Data = $0.rawValue.data(using: .utf8)!
+    //            targetDevice?.writeValue(dataToSend, for: myCharacteristic, type: .withResponse)
+    //          }
+    //
+    //      } else {
+    //          print("Not connected")
+    //      }
+    //
+    //  }
   }
-  
-  func centralManager(_ central: CBCentralManager, didDisconnectPeripheral peripheral: CBPeripheral, error: Error?) {
-    if let error = error { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") with error: \(error.localizedDescription)") }
-    else { print("Disconnected from peripheral \(peripheral.name ?? "Unknown") successfully") }
-  }
-  
-  func countPendingTask()
-  {
-    BGTaskScheduler.shared.getPendingTaskRequests { (taskRequests) in
-      let pendingTaskCount = taskRequests.count
-      print("Number of pending task requests: \(pendingTaskCount)") }
-  }
-  
-}
