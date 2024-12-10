@@ -186,7 +186,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
       ]
       
       reloadLocalStorage()
-      if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus)
+      if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus && !isTargetDeviceConnected())
       {
         centralManager.scanForPeripherals(withServices: listOfBLEServ, options: options)
         self.addScanLogHistory()
@@ -202,7 +202,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   func startScanningInForeground() {
     
     DispatchQueue.main.asyncAfter(deadline: .now()) {
-      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFG && self.blSettingStatus)
+      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFG && self.blSettingStatus && !self.isTargetDeviceConnected())
       {
         let options: [String: Any] = [
           CBCentralManagerScanOptionAllowDuplicatesKey: true,
@@ -214,7 +214,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
         self.addScanLogHistory()
       }
-      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFG && self.blSettingStatus)
+      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFG && self.blSettingStatus && !self.isTargetDeviceConnected())
       {
         print("[DEBUG] - Start Scanning in BG plus")
         let options: [String: Any] = [
@@ -262,6 +262,19 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     }
   }
   
+  func isTargetDeviceConnected() -> Bool
+  {
+    if(targetDevice != nil && targetDevice?.state.rawValue == 2)
+    {
+      os_log("[DEBUG] - Target Device is already in connection - No scan needed", log: OSLog.default, type: .debug)
+      return true
+    }
+    else
+    {
+      return false
+    }
+  }
+  
   func updateDeviceStatus()
   {
     //        for device in detectedDevices {
@@ -275,7 +288,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
       listOfSavedDevice.forEach { device in
         //        print("SAVED MAC: \(device.mac)")
         
-        if(detectedDevices.contains(device.mac) || (targetDevice?.state.rawValue == 2 && targetDevice?.identifier.uuidString == device.mac))
+        if(detectedDevices.contains(device.mac) || (targetDevice?.identifier.uuidString == device.mac && isTargetDeviceConnected()))
         {
           //          print("ON")
           let newDevice = BLEDevice(mac:device.mac, deviceName: device.deviceName, vehicleID: device.vehicleID, status: "on", isAutoConnect: device.isAutoConnect)
