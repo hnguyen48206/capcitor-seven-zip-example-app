@@ -89,22 +89,25 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   func scanHistoryLog(isGet:Bool)
   {
-    if(isGet)
-    {
-      var stringArray = UserDefaults.standard.string(forKey: "CapacitorStorage.scanHistoryLog") ?? ""
-      if(!stringArray.isEmpty)
+    timer.executeAfterDelay(delay: 0.5) {
+      if(isGet)
       {
-        listOfLatestSans = stringArray.components(separatedBy: "devider")
+        var stringArray = UserDefaults.standard.string(forKey: "CapacitorStorage.scanHistoryLog") ?? ""
+        if(!stringArray.isEmpty)
+        {
+          self.listOfLatestSans = stringArray.components(separatedBy: "devider")
+        }
+      }
+      else
+      {
+        if(!self.listOfLatestSans.isEmpty)
+        {
+          let singleString = self.listOfLatestSans.joined(separator: "devider")
+          UserDefaults.standard.set(singleString, forKey: "CapacitorStorage.scanHistoryLog")
+        }
       }
     }
-    else
-    {
-      if(!listOfLatestSans.isEmpty)
-      {
-        let singleString = listOfLatestSans.joined(separator: "devider")
-        UserDefaults.standard.set(singleString, forKey: "CapacitorStorage.scanHistoryLog")
-      }
-    }
+    
   }
   
   func reloadLocalStorage(clearDetectedDevices:Bool = true)
@@ -160,11 +163,11 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     case .poweredOn:
       startScanningInForeground()
       printLog(msg: "[DEBUG] - Start Scanning From Load")
-//      os_log("[DEBUG] - Start Scanning From Load", log: OSLog.default, type: .debug)
+      //      os_log("[DEBUG] - Start Scanning From Load", log: OSLog.default, type: .debug)
       blSettingStatus = true
     case .poweredOff, .unauthorized, .unsupported, .unknown, .resetting:
       printLog(msg: "[DEBUG] - Bluetooth is not available.")
-//      os_log("[DEBUG] - Bluetooth is not available.", log: OSLog.default, type: .debug)
+      //      os_log("[DEBUG] - Bluetooth is not available.", log: OSLog.default, type: .debug)
       blSettingStatus = false
     @unknown default:
       printLog(msg: "[DEBUG] - A new state is available that is not handled.")
@@ -173,12 +176,12 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   func addScanLogHistory(deviceList: String)
   {
-    if(listOfLatestSans.count > 50)
+    if(listOfLatestSans.count > 200)
     {
       listOfLatestSans.removeFirst()
     }
     let newItem = df.string(from: Date()) + "_" + deviceList
-//    printLog(msg: newItem)
+    //    printLog(msg: newItem)
     listOfLatestSans.append(newItem)
     scanHistoryLog(isGet: false)
   }
@@ -203,7 +206,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     else
     {
       printLog(msg: "[DEBUG] - No Scanning in BG cause the FG scan is happening")
-//      os_log("[DEBUG] - No Scanning in BG cause the FG scan is happening", log: OSLog.default, type: .debug)
+      //      os_log("[DEBUG] - No Scanning in BG cause the FG scan is happening", log: OSLog.default, type: .debug)
     }
   }
   
@@ -250,7 +253,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     centralManager.stopScan()
     updateDeviceStatus()
     printLog(msg: "[DEBUG] - Stop Scanning in BG")
-//    os_log("[DEBUG] - Stop Scanning in BG", log: OSLog.default, type: .debug)
+    //    os_log("[DEBUG] - Stop Scanning in BG", log: OSLog.default, type: .debug)
   }
   
   public func stopScanningInForeground(autorestart:Bool) {
@@ -274,8 +277,9 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   {
     if(targetDevice != nil && targetDevice?.state.rawValue == 2)
     {
-//      os_log("[DEBUG] - Target Device is already in connection - No scan needed", log: OSLog.default, type: .debug)
+      //      os_log("[DEBUG] - Target Device is already in connection - No scan needed", log: OSLog.default, type: .debug)
       printLog(msg: "[DEBUG] - Target Device is already in connection - No scan needed")
+      addScanLogHistory(deviceList: "Target Device is already in connection. No scan needed")
       return true
     }
     else
@@ -316,10 +320,10 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
         UserDefaults.standard.set(jsonString, forKey: "CapacitorStorage.MacBluetoothsConnected")
         pushLocalNoti(msg: jsonString!)
         addScanLogHistory(deviceList: jsonString!)
-//        timer.executeAfterDelay(delay: self.CONNECT_DELAY) {
-//          self.printLog(msg: "[DEBUG] - DELAY BEFORE CONNECTION \(self.CONNECT_DELAY)")
-//          self.connectDevice()
-//        }
+        //        timer.executeAfterDelay(delay: self.CONNECT_DELAY) {
+        //          self.printLog(msg: "[DEBUG] - DELAY BEFORE CONNECTION \(self.CONNECT_DELAY)")
+        //          self.connectDevice()
+        //        }
       } catch {
         printLog(msg: "[DEBUG] - Failed to encode devices: \(error.localizedDescription)")
       }
@@ -360,7 +364,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     else
     {
       printLog(msg: "[DEBUG] TARGET DEVICE is alreay in connection")
-//      os_log("[DEBUG] TARGET DEVICE is alreay in connection", log: OSLog.default, type: .debug)
+      //      os_log("[DEBUG] TARGET DEVICE is alreay in connection", log: OSLog.default, type: .debug)
     }
   }
   
