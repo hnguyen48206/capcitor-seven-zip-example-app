@@ -71,6 +71,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   {
     // Setup Location Manager
     locationManager.delegate = self
+    locationManager.requestWhenInUseAuthorization()
     locationManager.requestAlwaysAuthorization()
     locationManager.allowsBackgroundLocationUpdates = true
     locationManager.pausesLocationUpdatesAutomatically = false
