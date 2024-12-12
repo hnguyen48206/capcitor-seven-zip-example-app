@@ -85,6 +85,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     else { return }
     printLog(msg: "Updated Location: \(location)")
   }
+  
   func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     printLog(msg: "Failed to get location: \(error)")
   }
@@ -414,6 +415,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
       }
     }
   }
+  
   func scheduleBLEScan() {
     //    let request = BGAppRefreshTaskRequest(identifier: "com.hnguyen48206.blesrv.ios")
     countPendingTask()
@@ -517,6 +519,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
       print(msg)
     }
   }
+  
   func getCurrentConnectedList()
   {
     let peripherals = centralManager.retrieveConnectedPeripherals(withServices: listOfBLEServ)
