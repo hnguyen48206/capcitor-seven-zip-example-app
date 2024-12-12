@@ -32,6 +32,7 @@ enum BluetoothCommand: String, CaseIterable {
 class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   private let locationManager = CLLocationManager()
   var blSettingStatus: Bool = true
+  var locationSettingAlwaysStatus: Bool = true
   var centralManager: CBCentralManager!
   var targetPeripheral: CBPeripheral?
   let logger: Logger = Logger(subsystem: "com.hnguyen48206.blesrv.ios", category: "background")
@@ -88,6 +89,26 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     printLog(msg: "Failed to get location: \(error)")
   }
   
+  func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+    switch status {
+    case .authorizedAlways:
+      locationSettingAlwaysStatus = true
+      printLog(msg: "[DEBUG] Location access granted: Always")
+    case .authorizedWhenInUse:
+      locationSettingAlwaysStatus = false
+      printLog(msg: "[DEBUG] Location access granted: When In Use")
+    case .denied, .restricted:
+      locationSettingAlwaysStatus = false
+      printLog(msg: "[DEBUG] Location access denied")
+    case .notDetermined:
+      locationSettingAlwaysStatus = false
+      printLog(msg: "[DEBUG] Location access not determined")
+    @unknown default:
+      locationSettingAlwaysStatus = false
+      printLog(msg: "[DEBUG] - Location Setting Unknown")
+    }
+  }
+
   func scanHistoryLog(isGet:Bool)
   {
     timer.executeAfterDelay(delay: 0.5) {
@@ -190,16 +211,14 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   func startScanning() {
     if(!isScanning)
     {
-      isScanning = true;
-      
-      let options: [String: Any] = [
-        CBCentralManagerScanOptionAllowDuplicatesKey: false,
-        CBConnectPeripheralOptionNotifyOnConnectionKey: true
-      ]
-      
-      reloadLocalStorage()
-      if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus && !isTargetDeviceConnected())
+      if(isScanConductable())
       {
+        let options: [String: Any] = [
+          CBCentralManagerScanOptionAllowDuplicatesKey: false,
+          CBConnectPeripheralOptionNotifyOnConnectionKey: true
+        ]
+        isScanning = true;
+        reloadLocalStorage()
         getCurrentConnectedList()
         centralManager.scanForPeripherals(withServices: listOfBLEServ, options: options)
       }
@@ -212,36 +231,34 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   }
   
   func startScanningInForeground() {
-    
     DispatchQueue.main.asyncAfter(deadline: .now()) {
-      if(self.Vehicle_IsMoving.Vehicle_IsMoving && self.isFG && self.blSettingStatus && !self.isTargetDeviceConnected())
+      if(self.isScanConductable())
       {
-        let options: [String: Any] = [
-          CBCentralManagerScanOptionAllowDuplicatesKey: true,
-          CBConnectPeripheralOptionNotifyOnConnectionKey: true
-        ]
-        self.printLog(msg: "[DEBUG] - Start Scanning in FG")
-        self.reloadLocalStorage()
-        self.isScanning = true;
-        self.getCurrentConnectedList()
-        self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
-      }
-      else if(self.Vehicle_IsMoving.Vehicle_IsMoving && !self.isFG && self.blSettingStatus && !self.isTargetDeviceConnected())
-      {
-        self.printLog(msg: "[DEBUG] - Start Scanning in BG plus")
-        let options: [String: Any] = [
-          CBCentralManagerScanOptionAllowDuplicatesKey: true,
-          CBConnectPeripheralOptionNotifyOnConnectionKey: true,
-          CBCentralManagerScanOptionSolicitedServiceUUIDsKey: self.listOfBLEServ
-        ]
-        self.reloadLocalStorage()
-        self.isScanning = true;
-        self.getCurrentConnectedList()
-        self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
-      }
-      else
-      {
-        self.printLog(msg: "[DEBUG] - Not moving \(self.Vehicle_IsMoving.Vehicle_IsMoving)) - No BL \(self.blSettingStatus)")
+        if(self.isFG)
+        {
+          let options: [String: Any] = [
+            CBCentralManagerScanOptionAllowDuplicatesKey: true,
+            CBConnectPeripheralOptionNotifyOnConnectionKey: true
+          ]
+          self.printLog(msg: "[DEBUG] - Start Scanning in FG")
+          self.reloadLocalStorage()
+          self.isScanning = true;
+          self.getCurrentConnectedList()
+          self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
+        }
+        else
+        {
+          self.printLog(msg: "[DEBUG] - Start Scanning in BG plus")
+          let options: [String: Any] = [
+            CBCentralManagerScanOptionAllowDuplicatesKey: true,
+            CBConnectPeripheralOptionNotifyOnConnectionKey: true,
+            CBCentralManagerScanOptionSolicitedServiceUUIDsKey: self.listOfBLEServ
+          ]
+          self.reloadLocalStorage()
+          self.isScanning = true;
+          self.getCurrentConnectedList()
+          self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
+        }
       }
       self.timer.executeAfterDelay(delay: self.SCAN_PERIOD) {
         self.stopScanningInForeground(autorestart: true)
@@ -410,6 +427,21 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
     } catch {
       printLog(msg: "[DEBUG] - Could not schedule BLE scan: \(error)")
       logger.log("[DEBUG] - Could not schedule BLE scan: \(error)")
+    }
+  }
+  
+  func isScanConductable() -> Bool
+  {
+    if(Vehicle_IsMoving.Vehicle_IsMoving && blSettingStatus && !isTargetDeviceConnected() && listOfSavedDevice.count>0 && locationSettingAlwaysStatus)
+    {
+      return true
+    }
+    else
+    {
+      let msg = "No scanning because Vehicle_IsMoving \(Vehicle_IsMoving.Vehicle_IsMoving) or listOfSavedDevice \(listOfSavedDevice.count) or blSettingStatus \(blSettingStatus) or locationSettingAlwaysStatus \(locationSettingAlwaysStatus)"
+      addScanLogHistory(deviceList: msg)
+      printLog(msg: "[DEBUG] \(msg)")
+      return false
     }
   }
   
