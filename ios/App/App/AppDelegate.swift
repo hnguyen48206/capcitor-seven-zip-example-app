@@ -23,8 +23,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       }
     }
     BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv.ios", using: nil) { task in
-      //      BGProcessingTask
-      //      BGAppRefreshTask
       self.handleBLEScan(task: task as! BGProcessingTask)
     }
     
@@ -47,14 +45,8 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   
   @objc func handleCustomNotificationStop() {
-    if(isServTriggered())
-    {
-      print("Custom notification stop received!")
-      UserDefaults.standard.set(false, forKey: "serviceRunning")
-      self.timer.executeAfterDelay(delay: 1) {
-        self.bleManager.blSettingStatus = false
-      }
-    }
+    UserDefaults.standard.set(false, forKey: "serviceRunning")
+    bleManager.blSettingStatus = false
   }
   
   func isServTriggered() -> Bool
