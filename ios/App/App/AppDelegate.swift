@@ -29,7 +29,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
     
     NotificationCenter.default.addObserver(self, selector: #selector(handleCustomNotificationStart), name: Notification.Name("hnguyen48206_startble"), object: nil)
-    NotificationCenter.default.addObserver(self, selector: #selector(handleCustomNotificationStop), name: Notification.Name("hnguyen48206_startble"), object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(handleCustomNotificationStop), name: Notification.Name("hnguyen48206_stopble"), object: nil)
     
     return true
   }
