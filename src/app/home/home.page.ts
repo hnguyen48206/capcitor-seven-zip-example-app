@@ -26,7 +26,7 @@ export class HomePage {
     }, 2000);
   }
   async stopBLESER() {
-    // await BLEServ.stopService();
+    await BLEServ.stopService();
     if (this.updateInterval != null) clearInterval(this.updateInterval);
   }
   async getCurrentList() {

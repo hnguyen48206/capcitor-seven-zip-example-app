@@ -28,18 +28,31 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
       self.handleBLEScan(task: task as! BGProcessingTask)
     }
     
-    NotificationCenter.default.addObserver(self, selector: #selector(handleCustomNotification), name: Notification.Name("hnguyen48206_startble"), object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(handleCustomNotificationStart), name: Notification.Name("hnguyen48206_startble"), object: nil)
+    NotificationCenter.default.addObserver(self, selector: #selector(handleCustomNotificationStop), name: Notification.Name("hnguyen48206_startble"), object: nil)
     
     return true
   }
   
-  @objc func handleCustomNotification() {
+  @objc func handleCustomNotificationStart() {
+    UserDefaults.standard.set(true, forKey: "serviceRunning")
+    self.bleManager.blSettingStatus = true
     if(!isServTriggered())
     {
-      print("Custom notification received!")
-      UserDefaults.standard.set(true, forKey: "serviceRunning")
+      print("Custom notification start received!")
       self.timer.executeAfterDelay(delay: 1) {
         self.bleManager.setup()
+      }
+    }
+  }
+  
+  @objc func handleCustomNotificationStop() {
+    if(isServTriggered())
+    {
+      print("Custom notification stop received!")
+      UserDefaults.standard.set(false, forKey: "serviceRunning")
+      self.timer.executeAfterDelay(delay: 1) {
+        self.bleManager.blSettingStatus = false
       }
     }
   }
