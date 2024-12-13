@@ -61,6 +61,10 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   override init() {
     super.init()
+  }
+  
+  func setup ()
+  {
     centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
     requestLocalNotification()
     setupLocationManager()
@@ -83,7 +87,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation])
   { guard let location = locations.last
     else { return }
-    printLog(msg: "Updated Location: \(location)")
+//    printLog(msg: "Updated Location: \(location)")
   }
   
   func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
@@ -212,6 +216,7 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   func startScanning() {
     if(!isScanning)
     {
+      reloadLocalStorage()
       if(isScanConductable())
       {
         let options: [String: Any] = [
@@ -232,6 +237,8 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   }
   
   func startScanningInForeground() {
+    self.reloadLocalStorage()
+
     DispatchQueue.main.asyncAfter(deadline: .now()) {
       if(self.isScanConductable())
       {
@@ -242,7 +249,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
             CBConnectPeripheralOptionNotifyOnConnectionKey: true
           ]
           self.printLog(msg: "[DEBUG] - Start Scanning in FG")
-          self.reloadLocalStorage()
           self.isScanning = true;
           self.getCurrentConnectedList()
           self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)
@@ -255,7 +261,6 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
             CBConnectPeripheralOptionNotifyOnConnectionKey: true,
             CBCentralManagerScanOptionSolicitedServiceUUIDsKey: self.listOfBLEServ
           ]
-          self.reloadLocalStorage()
           self.isScanning = true;
           self.getCurrentConnectedList()
           self.centralManager.scanForPeripherals(withServices: self.listOfBLEServ, options: options)

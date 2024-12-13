@@ -1,11 +1,13 @@
 import { Component } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
+import { BLEServ } from 'ble-srv';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
 })
+
 export class HomePage {
   addDeviceID = '';
   rmDeviceID = '';
@@ -13,12 +15,12 @@ export class HomePage {
   arr: any[] = [];
   updateInterval: any;
   pastScanLogs: any[] = [];
+
   ionViewWillEnter() {
     this.getCurrentList();
   }
-
   async startBLESER() {
-    // await BLEServ.startService();
+    await BLEServ.startService();
     this.updateInterval = setInterval(() => {
       this.getCurrentList();
     }, 2000);
@@ -73,7 +75,6 @@ export class HomePage {
     // return macRegex.test(mac);
     return true;
   }
-
   async getScanHistory()
   {
     let res = await Preferences.get({ key: 'scanHistoryLog' });

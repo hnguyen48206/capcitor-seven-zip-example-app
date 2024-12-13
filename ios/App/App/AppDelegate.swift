@@ -14,36 +14,69 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     _ application: UIApplication,
     didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]?
   ) -> Bool {
-    bleManager = BLEManager()
     
+    bleManager = BLEManager()
+    if(isServTriggered())
+    {
+      self.timer.executeAfterDelay(delay: 1) {
+        self.bleManager.setup()
+      }
+    }
     BGTaskScheduler.shared.register(forTaskWithIdentifier: "com.hnguyen48206.blesrv.ios", using: nil) { task in
       //      BGProcessingTask
       //      BGAppRefreshTask
       self.handleBLEScan(task: task as! BGProcessingTask)
     }
     
+    NotificationCenter.default.addObserver(self, selector: #selector(handleCustomNotification), name: Notification.Name("hnguyen48206_startble"), object: nil)
+    
     return true
   }
-  func handleBLEScan(task: BGProcessingTask) {
-    print("[DEBUG] - Start Scanning in BG")
-    os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
-    bleManager.startScanning()
-    
-    //In BG, scan only for 10s each
-    self.timer.executeAfterDelay(delay: 10) {
-      print("[DEBUG] - Should STOP NOW - By Task")
-      self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
-      self.bleManager.stopScanning()
-      self.bleManager.scheduleBLEScan()
-      task.setTaskCompleted(success: true)
+  
+  @objc func handleCustomNotification() {
+    if(!isServTriggered())
+    {
+      print("Custom notification received!")
+      UserDefaults.standard.set(true, forKey: "serviceRunning")
+      self.timer.executeAfterDelay(delay: 1) {
+        self.bleManager.setup()
+      }
     }
-    
-    task.expirationHandler = {
-      print("[DEBUG] - Should STOP NOW - By Expiration")
-      self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
-      self.bleManager.stopScanning()
-      self.bleManager.scheduleBLEScan()
-      task.setTaskCompleted(success: false)
+  }
+  
+  func isServTriggered() -> Bool
+  {
+    let isRunning = UserDefaults.standard.bool(forKey: "serviceRunning")
+    return isRunning
+  }
+  func handleBLEScan(task: BGProcessingTask) {
+    if(isServTriggered())
+    {
+      print("[DEBUG] - Start Scanning in BG")
+      os_log("[DEBUG] - Start Scanning in BG", log: OSLog.default, type: .debug)
+      bleManager.startScanning()
+      
+      //In BG, scan only for 10s each
+      self.timer.executeAfterDelay(delay: 10) {
+        print("[DEBUG] - Should STOP NOW - By Task")
+        self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
+        self.bleManager.stopScanning()
+        self.bleManager.scheduleBLEScan()
+        task.setTaskCompleted(success: true)
+      }
+      
+      task.expirationHandler = {
+        print("[DEBUG] - Should STOP NOW - By Expiration")
+        self.bleManager.logger.log("[DEBUG] - Should STOP NOW")
+        self.bleManager.stopScanning()
+        self.bleManager.scheduleBLEScan()
+        task.setTaskCompleted(success: false)
+      }
+    }
+    else
+    {
+      print("[DEBUG] - Service Has Not Triggered Yet.")
+      task.setTaskCompleted(success: true)
     }
   }
   
