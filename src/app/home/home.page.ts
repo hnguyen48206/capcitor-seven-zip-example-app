@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { Preferences } from '@capacitor/preferences';
-
+//tagged
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
