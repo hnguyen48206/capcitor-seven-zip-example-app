@@ -27,4 +27,4 @@ include ':capawesome-capacitor-file-picker'
 project(':capawesome-capacitor-file-picker').projectDir = new File('../node_modules/@capawesome/capacitor-file-picker/android')
 
 include ':ble-srv'
-project(':ble-srv').projectDir = new File('../localPlugins/capacitor-ble-bgservice-normalbl/android')
+project(':ble-srv').projectDir = new File('../node_modules/ble-srv/android')

@@ -19,7 +19,7 @@ def capacitor_pods
   pod 'CapacitorPreferences', :path => '../../node_modules/@capacitor/preferences'
   pod 'CapacitorStatusBar', :path => '../../node_modules/@capacitor/status-bar'
   pod 'CapawesomeCapacitorFilePicker', :path => '../../node_modules/@capawesome/capacitor-file-picker'
-  pod 'BleSrv', :path => '../../localPlugins/capacitor-ble-bgservice-normalbl'
+  pod 'BleSrv', :path => '../../node_modules/ble-srv'
 end
 
 target 'App' do
