@@ -33,14 +33,15 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
   }
   
   @objc func handleCustomNotificationStart() {
-    UserDefaults.standard.set(true, forKey: "serviceRunning")
-    self.bleManager.blSettingStatus = true
+    print("Custom notification start received!")
     if(!isServTriggered())
     {
-      print("Custom notification start received!")
+      UserDefaults.standard.set(true, forKey: "serviceRunning")
+      self.bleManager.blSettingStatus = true
       self.timer.executeAfterDelay(delay: 1) {
         self.bleManager.setup()
       }
+      self.bleManager.setup()
     }
   }
   

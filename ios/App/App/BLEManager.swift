@@ -31,7 +31,8 @@ enum BluetoothCommand: String, CaseIterable {
 @available(iOS 14.0, *)
 class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   private let locationManager = CLLocationManager()
-  var blSettingStatus: Bool = true
+  var initialSetup: Bool = false
+  var blSettingStatus: Bool = false
   var locationSettingAlwaysStatus: Bool = true
   var centralManager: CBCentralManager!
   var targetPeripheral: CBPeripheral?
@@ -65,11 +66,18 @@ class BLEManager: NSObject, CBCentralManagerDelegate, CLLocationManagerDelegate{
   
   func setup ()
   {
-    centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
-    requestLocalNotification()
-    setupLocationManager()
-    df.dateFormat = "yyyy-MM-dd HH:mm:ss"
-    scanHistoryLog(isGet: true)
+    if(!initialSetup)
+    {
+      centralManager = CBCentralManager(delegate: self, queue: DispatchQueue.main)
+      requestLocalNotification()
+      setupLocationManager()
+      df.dateFormat = "yyyy-MM-dd HH:mm:ss"
+      scanHistoryLog(isGet: true)
+    }
+    else
+    {
+      initialSetup = true
+    }
   }
   
   func setupLocationManager()
